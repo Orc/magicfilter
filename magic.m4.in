@@ -95,7 +95,7 @@ dnl
 #
 # text, finally
 #
-/text/		`ifdef(`PRINTER',defn(`Copy'),
+/text/		ifdef(`PRINTER',defn(`Copy'),
 		    `ifdef(`HANDLE_TEXT',defn(`HANDLE_TEXT'),
 			`ifelse(defn(`TEXT'),false,
 			    defn(`PSfromText'),
