@@ -35,7 +35,7 @@
 #include "names.h"
 #include "form.h"
 
-#ifndef	lint
+#if 0
 static char *moduleid = 
 	"@(#)ascmagic.c,v 3.0.1.1 1997/08/01 00:38:22 orc Exp";
 #endif	/* lint */
@@ -48,7 +48,7 @@ __lf_ascmagic(buf, nbytes)
 unsigned char *buf;
 int nbytes;	/* size actually read */
 {
-	int i, isblock, has_escapes = 0;
+	int i, has_escapes = 0;
 	unsigned char *s;
 	char nbuf[HOWMANY+1];	/* one extra for terminating '\0' */
 	char *token;

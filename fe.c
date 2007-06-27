@@ -34,11 +34,16 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <pwd.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "rule.h"
 #include "magicfilter.h"
+#include "file/file.h"
 
 int debug = 0;
 char *progname;
@@ -51,7 +56,7 @@ void
 fe(int input, int output)
 {
     char blk[1024];
-    int size, status, i;
+    int size, i;
     int fd;
 
     dup2(input, 0);
@@ -151,6 +156,7 @@ be(int input, int output)
 					break;
 			case FPIPE:	r->action = FFILTER;
 					break;
+			default:	break;
 			}
 		    }
 
@@ -164,16 +170,18 @@ be(int input, int output)
 /*
  * magicfilter:  transparently print a variety of file formats
  */
+int
 main(int argc, char **argv)
 {
 
-    pid_t child;
 #ifndef NOFE
+    int status;
+    pid_t child;
     int input[2], output[2];
 #endif
     int script;
-    int status;
-    int x;
+    char *user;
+    struct passwd *pw;
 
     script = getoptionsandscript(argc, argv);
 
@@ -186,6 +194,25 @@ main(int argc, char **argv)
 	cat_it(0, 0, &dummy);
 	exit(0);
     }
+
+    /* don't run as root;  run as the print job owner if at all possible,
+     * otherwise set gid and uid to -1 and go from there
+     */
+    if (getuid() == 0) {
+	if ( (user=getenv("LPUSER")) == 0)
+	    user = "nobody";
+
+	if ( (pw = getpwnam(user)) != 0) {
+	    setgid(pw->pw_gid);
+	    setuid(pw->pw_uid);
+	}
+	else {
+	    setgid(-1);
+	    setuid(-1);
+	}
+    }
+
+
 
 #ifndef NOFE
     if (pipe(input) == -1 || pipe(output) == -1) {

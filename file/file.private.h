@@ -96,6 +96,7 @@ extern int   __lf_softmagic		__P((unsigned char *, int));
 extern void  __lf_tryit			__P((unsigned char *, int, int));
 extern int   __lf_zmagic		__P((unsigned char *, int));
 extern void  __lf_ckfprintf		__P((FILE *, const char *, ...));
+extern void  __lf_form			__P((char *, ...));
 extern unsigned long __lf_signextend	__P((struct magic *, unsigned long));
 
 

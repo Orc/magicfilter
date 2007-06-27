@@ -44,7 +44,7 @@
 
 #include "file.private.h"
 
-#ifndef	lint
+#if 0
 static char *moduleid = 
 	"@(#)$Id$";
 #endif	/* lint */

@@ -36,9 +36,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <ctype.h>
 #include "file.private.h"
 
-#ifndef lint
+#if 0
 static char *moduleid =
 	"@(#)$Id$";
 #endif  /* lint */
@@ -88,18 +89,18 @@ struct magic *m;
 		       m->offset);
 
 	if (m->flag & INDIR)
-		(void) fprintf(stderr, "(%s,%d),",
+		(void) fprintf(stderr, "(%s,%ld),",
 			       (m->in.type >= 0 && m->in.type < SZOF(typ)) ? 
 					typ[(unsigned char) m->in.type] :
 					"*bad*",
-			       m->in.offset);
+			       (long)(m->in.offset));
 
 	(void) fprintf(stderr, " %s%s", (m->flag & UNSIGNED) ? "u" : "",
 		       (m->type >= 0 && m->type < SZOF(typ)) ? 
 				typ[(unsigned char) m->type] : 
 				"*bad*");
 	if (m->mask != ~0L)
-		(void) fprintf(stderr, " & %.8x", m->mask);
+		(void) fprintf(stderr, " & %.8lx", (long)(m->mask));
 
 	(void) fprintf(stderr, ",%c", m->reln);
 
@@ -112,7 +113,7 @@ struct magic *m;
 	    case LELONG:
 	    case BESHORT:
 	    case BELONG:
-		    (void) fprintf(stderr, "%d", m->value.l);
+		    (void) fprintf(stderr, "%ld", m->value.l);
 		    break;
 	    case STRING:
 		    __lf_showstr(stderr, m->value.s, -1);

@@ -12,6 +12,7 @@
  */
 
 #include "file.private.h"
+#include "form.h"
 
 int
 magic_zflag(int x)

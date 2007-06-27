@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+void
 reject(char *fmt, ...)
 {
     va_list ptr;

@@ -33,6 +33,7 @@
 #include "magicfilter.h"
 #include <file.h>
 #include <string.h>
+#include <unistd.h>
 
 char *filetype = 0;
 
@@ -40,7 +41,6 @@ void
 xyzzy()
 {
     struct rule *r;
-    int x;
     char *ftype;
     char bfr[4096];
     int size;

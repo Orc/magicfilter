@@ -29,6 +29,8 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
 
@@ -61,6 +63,8 @@ struct x_option opts[] = {
 } ;
 #define NROPTS	(sizeof opts/sizeof opts[0])
 
+extern void showopts(FILE*, int, struct x_option*);
+
 #define GETOPT(argc,argv)	x_getopt(argc, argv, NROPTS, opts)
 #define OPTIND			x_optind
 #define	OPTARG			x_optarg
@@ -86,10 +90,6 @@ SET(char *x,char *y)
 }
 #endif
 
-#ifdef HAVE_BASENAME
-const char *basename(char*);
-#endif
-
 int
 getoptionsandscript(int argc, char **argv)
 {
@@ -101,7 +101,7 @@ getoptionsandscript(int argc, char **argv)
 				 * figured out
 				 */
 
-    if (argv[1][0] != '-') {	/* #! hack works.  Goodie */ 
+    if (argv[1] && (argv[1][0] != '-')) {	/* #! hack works.  Goodie */ 
 	script = argv[1];
 	++argv, --argc;
     }

@@ -34,6 +34,7 @@
  */
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -206,19 +207,19 @@ pipe_it(char *blk, int size, struct rule *r)
     pid_t spawn;
     int status;
     char *file = 0;
-    pid_t sysproc;
 
     if (pipe(io) == -1) {
 	perror("pipe::pipe");
 	exit(1);
     }
 
-    switch (spawn = fork()) {
-    case -1:
+    spawn = fork();
+
+    if (spawn == -1) {
 	perror("pipe::fork");
 	exit(1);
-
-    default:
+    }
+    else if (spawn != 0) {
 	/* parent -- run xyzzy against the output of the filter, then exit
 	 */
 	dup2(io[0], 0);
@@ -229,8 +230,8 @@ pipe_it(char *blk, int size, struct rule *r)
 	else
 	    xyzzy();
 	exit(0);	/* be paranoid */
-
-    case 0:
+    }
+    else {
 	if (r->action == FPIPE) {
 	    /* fpipe spools stdin to a file before processing, so it's easy
 	     */
@@ -258,15 +259,18 @@ pipe_it(char *blk, int size, struct rule *r)
 	     * must refork again so we can shovel what we got plus
 	     * what we didn't get into the filter.
 	     */
+	    pid_t sysproc;
+
 	    if (pipe(sio) == -1) {
 		perror("pipe::pipe");
 		exit(1);
 	    }
-	    switch (sysproc = fork()) {
-	    case -1:
+
+	    if ( (sysproc = fork()) == -1) {
 		perror("pipe::fork");
 		exit(1);
-	    case 0:
+	    }
+	    else if (sysproc == 0) {
 		/* child -- execvp() the process
 		 */
 		close(sio[1]);
@@ -277,7 +281,8 @@ pipe_it(char *blk, int size, struct rule *r)
 		execvp(r->argv[0], r->argv);
 		perror(r->argv[0]);
 		exit(1);
-	    default:
+	    }
+	    else {
 		/* parent -- copy blk + stdin -> stdout
 		 */
 		close(io[0]);

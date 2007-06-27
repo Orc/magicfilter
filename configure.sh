@@ -5,24 +5,14 @@
 # is a script that's processed with eval, so you need to be very careful to
 # make certain that what you quote is what you want to quote.
 
-ac_help='--path=PATH		look for conversion programs in PATH
---filterdir=DIR		where to put printer filters (prefix/sbin/printers)
+ac_help='--filterdir=DIR		where to put printer filters (prefix/sbin/printers)
 --traditional		build a more traditional sort of magicfilter
 --use-local-magic	install a private magic file
+--use-fifo		pipe the output from gs through a fifo
 --with-papersize=SIZE	set the default paper size for gs/pstext'
 
 LOCAL_AC_OPTIONS='
 case X"$1" in
-X--path=*)  AC_PATH=`echo "$1" | sed -e 's/^[^=]*=//'`
-	    shift 1
-	    ;;
-X--path)    AC_PATH="$2"
-	    shift 2
-	    ;;
-X--use-local-magic|X--use-local)
-	    ac_local_magic=T
-	    shift 1
-	    ;;
 X--filterdir=*)
 	    AC_FILTER=`echo "$1" | sed -e 's/^[^=]*=//'`
 	    shift 1
@@ -44,16 +34,23 @@ esac'
 TARGET=magicfilter
 . ./configure.inc
 
+
 # and away we go
 #
+USE_FIFO=T		# default to piping ghostscript via a fifo
 AC_INIT magicfilter
 
 AC_PROG_CC
 
 AC_SUB filterdir ${AC_FILTER:-$AC_PREFIX/sbin/printers}
-AC_SUB GSOUT '${FIFO}'
 
-if [ ! "$ac_local_magic" ]; then
+if [ "$USE_FIFO" = "T" ]; then
+    AC_SUB GSOUT '${FIFO}'
+else
+    AC_SUB GSOUT '-'
+fi
+
+if [ ! "$USE_LOCAL_MAGIC" ]; then
     case $ac_os in
     [Ff]ree[Bb][Ss][Dd])magicpath=/etc:/usr/etc:/usr/share/misc ;;
     *)			magicpath=/etc:/usr/etc: ;;
@@ -69,11 +66,11 @@ if [ ! "$ac_local_magic" ]; then
 
     if [ "$F" -a "$G" ]; then
 	save_AC_PATH=$AC_PATH
-	AC_PATH=$magicpath MF_PATH_INCLUDE MAGIC -r magic || ac_local_magic=T
+	AC_PATH=$magicpath MF_PATH_INCLUDE MAGIC -r magic || USE_LOCAL_MAGIC=T
 	AC_PATH=$save_AC_PATH
     else
 	LOG "file(1) is too old -- using private magic file"
-	ac_local_magic=T
+	USE_LOCAL_MAGIC=T
     fi
 else
     LOG "Using private magic file $AC_CONFDIR/mf.magic"
@@ -81,13 +78,13 @@ fi
 rm -f $$
 trap 1 2 3 9 15
 
-if [ "$ac_local_magic" ]; then
+if [ "$USE_LOCAL_MAGIC" ]; then
     # if we're using local magic, manually write the substitution
     # information into the config files
     AC_CONFIG MAGIC "$AC_CONFDIR"/mf.magic
-    AC_SUB INSTALL_MAGIC ""
+    AC_SUB INSTALL_MAGIC "$PROG_INSTALL"
 else
-    AC_SUB INSTALL_MAGIC ": "
+    AC_SUB INSTALL_MAGIC ":"
 fi
 AC_SUB DO_WHAT install-$TARGET
 
@@ -104,6 +101,7 @@ if AC_CHECK_HEADERS basis/options.h; then
 fi
 test "$HAVE_XGETOPT" || AC_SUB XGETOPT options.o
 
+AC_CHECK_HEADERS malloc.h || AC_CHECK_HEADERS sys/malloc.h
 
 AC_CHECK_FUNCS basename
 

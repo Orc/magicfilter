@@ -22,16 +22,17 @@
 	will look for it here as well.
 
     --filterdir=DIR	where to put printer filters ($prefix/sbin/printers)
-    --path=PATH		look for conversion programs in PATH
-					(/sbin:/usr/sbin:/bin:/usr/bin:\
-					 /usr/local/bin:/usr/X11R6/bin)
+    --with-path=PATH	look for conversion programs in PATH ($PATH)
 
 	If configure can't find a conversion program, it will build
 	magicfilter without support for that particular conversion.
-	The default path is set up to (hopefully) get all the normal
-	places for filters, but if you're on a bizarre system like
-	Solaris, you may need to customise it to include /opt/LLOCL/bin
-	and so on.
+
+	Normally, magicfilter uses your $PATH to (hopefully) get all
+	the normal places for filters, but you may need to customize
+	it if you're on a system that places filters in odd locations.
+
+		NOTE: This used to be --path in previous versions
+		of Magicfilter.
 
     --use-local-magic	install a private magic file
 
@@ -40,7 +41,12 @@
 	file does not appear to be modern enough (experimentally
 	determined by seeing if it recognises a H-P pjl file),
 	configure.sh will configure magicfilter to use a local
-	magic file.
+	magic file.   But there are cases where file(1) has been
+	modified so that it doesn't just use /etc/magic, but instead
+	has its magic files scattered randomly around, and thus
+	configure.sh will report that /etc/magic works when it
+	doesn't.  If you use --use-local-magic, magicfilter won't
+	even bother to try and use the system /etc/magic.
 
     --with-papersize=size 
 

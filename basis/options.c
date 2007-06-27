@@ -120,7 +120,7 @@ x_getopt(int argc, char **argv, int optcount, struct x_option *opts)
 
     for (x=0; x<optcount; x++)
 	if (opts[x].name && strcmp(opts[x].name, longopts) == 0) {
-	    if (opts[x].has_argument)
+	    if (opts[x].has_argument) {
 		if (x_optind < x_argc)
 		    x_optarg = x_argv[x_optind++];
 		else {
@@ -130,6 +130,7 @@ x_getopt(int argc, char **argv, int optcount, struct x_option *opts)
 				x_argv[0], longopts);
 		    return EOF;
 		}
+	    }
 	    return opts[x].optval;
 	}
 

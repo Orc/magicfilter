@@ -1,4 +1,4 @@
-#
+#   @(#) configure.inc 1.10@(#)
 #   Copyright (c) 1999 David Parsons. All rights reserved.
 #   
 #   Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@ ac_standard="--src=DIR		where the source lives (.)
 
 __fail=exit
 
+ac_progname=$0
 ac_configure_command="$*"
 
 while [ $# -gt 0 ]; do
@@ -97,6 +98,29 @@ while [ $# -gt 0 ]; do
 	AC_MANDIR=`echo "$1" | sed -e 's/^[^=]*=//'`
 	shift 1;;
 
+    X--use-*=*)
+	_var=`echo "$1"| sed -n 's/^--use-\([A-Za-z][-A-Za-z0-9_]*\)=.*$/\1/p'`
+	if [ "$_var" ]; then
+	    _val=`echo "$1" | sed -e 's/^--use-[^=]*=\(.*\)$/\1/'`
+	    _v=`echo $_var | tr '[a-z]' '[A-Z]' | tr '-' '_'`
+	    case X"$_val" in
+	    X[Yy][Ee][Ss]|X[Tt][Rr][Uu][Ee]) eval USE_${_v}=T ;;
+	    X[Nn][Oo]|X[Ff][Aa][Ll][Ss][Ee]) eval unset USE_${_v} ;;
+	    *) echo "Bad value for --use-$_var ; must be yes or no"
+	       exit 1 ;;
+	    esac
+	else
+	    echo "Bad option $1.   Use --help to show options" 1>&2
+	    exit 1
+	fi
+	shift 1 ;;
+
+    X--use-*)
+        _var=`echo "$1"|sed -n 's/^--use-\([A-Za-z][-A-Za-z0-9_]*\)$/\1/p'`
+	_v=`echo $_var | tr '[a-z]' '[A-Z]' | tr '-' '_'`
+	eval USE_${_v}=T
+	shift 1;;
+
     X--with-*=*)
 	_var=`echo "$1"| sed -n 's/^--with-\([A-Za-z][-A-Za-z0-9_]*\)=.*$/\1/p'`
 	if [ "$_var" ]; then
@@ -104,7 +128,7 @@ while [ $# -gt 0 ]; do
 	    _v=`echo $_var | tr '[a-z]' '[A-Z]' | tr '-' '_'`
 	    eval WITH_${_v}=$_val
 	else
-	    LOG "Bad option $1.   Use --help to show options"
+	    echo "Bad option $1.   Use --help to show options" 1>&2
 	    exit 1
 	fi
 	shift 1 ;;
@@ -115,14 +139,14 @@ while [ $# -gt 0 ]; do
 	    _v=`echo $_var | tr '[a-z]' '[A-Z]' | tr '-' '_'`
 	    eval WITH_${_v}=1
 	else
-	    LOG "Bad option $1.   Use --help to show options"
+	    echo "Bad option $1.   Use --help to show options" 1>&2
 	    exit 1
 	fi
 	shift 1 ;;
 
     X--help)
-	LOG "$ac_standard"
-	test "$ac_help" && LOG "$ac_help"
+	echo "$ac_standard"
+	test "$ac_help" && echo "$ac_help"
 	exit 0;;
 
     *)	if [ "$LOCAL_AC_OPTIONS" ]; then
@@ -131,12 +155,20 @@ while [ $# -gt 0 ]; do
 	    ac_error=T
 	fi
 	if [ "$ac_error" ]; then
-	    LOG "Bad option $1.   Use --help to show options"
+	    echo "Bad option $1.   Use --help to show options" 1>&2
 	    exit 1
 	fi ;;
     esac
 done
 
+
+#
+# echo w/o newline
+#
+echononl()
+{
+    ${ac_echo:-echo} "${@}$ac_echo_nonl"
+}
 
 #
 # log something to the terminal and to a logfile.
@@ -151,7 +183,7 @@ LOG () {
 # a newline
 #
 LOGN () {
-    echo -n "$@" 1>&5
+    echononl "$@" 1>&5
     echo "$@"
 }
 
@@ -166,7 +198,7 @@ TLOG () {
 # log something to the terminal, no newline
 #
 TLOGN () {
-    echo -n "$@" 1>&5
+    echononl "$@" 1>&5
 }
 
 
@@ -195,7 +227,7 @@ EOF
     LOGN "checking for header $1"
 
     if $AC_CC -o /tmp/ngc$$ /tmp/ngc$$.c; then
-	echo '#define HAVE_'`echo $1 | tr 'a-z' 'A-Z' | tr './' '_'`' 1' >> $__cwd/config.h
+	AC_DEFINE 'HAVE_'`echo $1 | tr 'a-z' 'A-Z' | tr './' '_'` 1
 	TLOG " (found)"
 	rc=0
     else
@@ -223,7 +255,7 @@ EOF
     LOGN "checking for the $1 function"
 
     if $AC_CC -o /tmp/ngc$$ /tmp/ngc$$.c $LIBS; then
-	echo "#define `echo ${2:-HAVE_$1} | tr 'a-z' 'A-Z'` 1" >> $__cwd/config.h
+	AC_DEFINE `echo ${2:-HAVE_$1} | tr 'a-z' 'A-Z'` 1
 	TLOG " (found)"
 	rc=0
     else
@@ -231,6 +263,48 @@ EOF
 	cat /tmp/ngc$$.c
 	echo "$AC_CC -o /tmp/ngc$$ /tmp/ngc$$.c $LIBS"
 	TLOG " (not found)"
+	rc=1
+    fi
+    rm -f /tmp/ngc$$.c /tmp/ngc$$
+    return $rc
+}
+
+
+#
+# check to see if some structure contains a field
+#
+# usage: AC_CHECK_FIELD structure field {include ...}
+#
+AC_CHECK_FIELD () {
+    AC_PROG_CC
+
+    struct=$1
+    field=$2
+    shift 2
+
+    rm -f /tmp/ngc$$.c
+
+    for include in $*;do
+	echo "#include <$include>" >> /tmp/ngc$$.c
+    done
+
+    cat >> /tmp/ngc$$.c << EOF
+main()
+{
+    struct $struct foo;
+
+    foo.$field;
+}
+EOF
+
+    LOGN "checking that struct $struct has a $field field"
+
+    if $AC_CC -o /tmp/ngc$$ /tmp/ngc$$.c $AC_LIBS 2>>config.log; then
+	AC_DEFINE HAVE_`echo ${struct}_$field | tr 'a-z' 'A-Z'`
+	TLOG " (yes)"
+	rc=0
+    else
+	TLOG " (no)"
 	rc=1
     fi
     rm -f /tmp/ngc$$.c /tmp/ngc$$
@@ -300,8 +374,7 @@ EOF
     else
 	AC_SUB 'CFLAGS' ''
 	AC_SUB 'LDFLAGS' ''
-	TLOG " does not compile code properly"
-	$__fail 1
+	AC_FAIL " does not compile code properly"
     fi
 
     AC_SUB 'CC' "$AC_CC"
@@ -328,7 +401,7 @@ acLookFor () {
     for program in $*; do
 	IFS=":"
 	for x in $path; do
-	    if [ $__mode $x/$program ]; then
+	    if [ $__mode $x/$program -a -f $x/$program ]; then
 		echo $x/$program
 		break 2
 	    fi
@@ -357,7 +430,7 @@ MF_PATH_INCLUDE () {
 
     DEST=`acLookFor $__mode $*`
 
-    __sym=`echo -n "$SYM" | tr '[a-z]' '[A-Z]'`
+    __sym=`echo "$SYM" | tr '[a-z]' '[A-Z]'`
     if [ "$DEST" ]; then
 	TLOG " ($DEST)"
 	echo "$1 is $DEST"
@@ -386,6 +459,25 @@ AC_INIT () {
     __cwd=`pwd`
     exec 5>&1 1>$__cwd/config.log 2>&1
     AC_CONFIGURE_FOR=__AC_`echo $1 | sed -e 's/\..$//' | tr 'a-z' 'A-Z' | tr ' ' '_'`_D
+
+    # check to see whether to use echo -n or echo ...\c
+    #
+    echo -n hello > $$
+    echo world >> $$
+    if grep "helloworld" $$ >/dev/null; then
+	ac_echo="echo -n"
+	echo "[echo -n] works"
+    else
+	ac_echo="echo"
+	echo 'hello\c' > $$
+	echo 'world' >> $$
+	if grep "helloworld" $$ >/dev/null; then
+	    ac_echo_nonl='\c'
+	    echo "[echo ...\\c] works"
+	fi
+    fi
+    rm -f $$
+
     LOG "Configuring for [$1]"
     ac_os=`uname -s`
 
@@ -401,12 +493,12 @@ AC_INIT () {
 EOF
     rm -f $__cwd/config.mak
 
-AC_PREFIX=${AC_PREFIX:-/usr/local}
-AC_EXECDIR=${AC_EXECDIR:-$AC_PREFIX/bin}
-AC_LIBDIR=${AC_LIBDIR:-$AC_PREFIX/lib}
-AC_MANDIR=${AC_MANDIR:-$AC_PREFIX/man}
-AC_CONFDIR=${AC_CONFDIR:-/etc}
-AC_SRCDIR=${AC_SRCDIR:-`pwd`}
+    AC_PREFIX=${AC_PREFIX:-/usr/local}
+    AC_EXECDIR=${AC_EXECDIR:-$AC_PREFIX/bin}
+    AC_LIBDIR=${AC_LIBDIR:-$AC_PREFIX/lib}
+    AC_MANDIR=${AC_MANDIR:-$AC_PREFIX/man}
+    AC_CONFDIR=${AC_CONFDIR:-/etc}
+    AC_SRCDIR=${AC_SRCDIR:-`pwd`}
 
     AC_SUB 'srcdir'  "$AC_SRCDIR"
     AC_SUB 'prefix'  "$AC_PREFIX"
@@ -415,6 +507,7 @@ AC_SRCDIR=${AC_SRCDIR:-`pwd`}
     AC_SUB 'confdir' "$AC_CONFDIR"
     AC_SUB 'mandir'  "$AC_MANDIR"
 
+    AC_PATH=${WITH_PATH:-$PATH}
     AC_PROG_CPP
     AC_PROG_INSTALL
 }
@@ -588,7 +681,7 @@ AC_OUTPUT () {
 	rm -f config.cmd
 	cat - > config.cmd << EOF
 #! /bin/sh
-${CC:+CC=\"$CC\"} ${CFLAGS:+CFLAGS=\"$CFLAGS\"} $0 $ac_configure_command
+${CC:+CC=\"$CC\"} ${CFLAGS:+CFLAGS=\"$CFLAGS\"} $ac_progname $ac_configure_command
 EOF
 	chmod +x config.cmd
 
@@ -658,7 +751,7 @@ FOO
 EOF
 
     if $1 $2 /tmp/ngc$$.c > /tmp/ngc$$.o; then
-	if grep -v '#define' /tmp/ngc$$.o | grep -qs BAR; then
+	if grep -v '#define' /tmp/ngc$$.o | grep -s BAR >/dev/null; then
 	    echo "CPP=[$1], CPPFLAGS=[$2]"
 	    AC_SUB 'CPP' "$1"
 	    AC_SUB 'CPPFLAGS' "$2"
@@ -676,7 +769,11 @@ EOF
 # to run it as a filter.
 #
 AC_PROG_CPP () {
-    DEST=${AC_CPP_PROG:-`AC_PATH=/lib:/usr/lib:$ac_default_path acLookFor cpp`}
+    if [ "$AC_CPP_PROG" ]; then
+	DEST=$AC_CPP_PROG
+    else
+	DEST=`AC_PATH=/lib:/usr/lib:${AC_PATH:-$ac_default_path} acLookFor cpp`
+    fi
 
     unset fail
     LOGN "Looking for cpp"
@@ -689,29 +786,28 @@ AC_PROG_CPP () {
 	         acCheckCPP $DEST -pipe || fail=1
 
 	if [ "$fail" ]; then
-	    TLOG " (can't run cpp as a pipeline)"
-	    $__fail 1
+	    AC_FAIL " (can't run cpp as a pipeline)"
 	else
 	    TLOG " ok"
 	    return 0
 	fi
     fi
-    TLOG " (not found)"
-    $__fail 1
+    AC_FAIL " (not found)"
 }
 
 #
 # AC_FAIL spits out an error message, then __fail's 
 AC_FAIL() {
-    echo "$*"
+    LOG "$*" 
     $__fail 1
 }
 
 #
 # AC_SUB writes a substitution into config.sub
 AC_SUB() {
-    (   echo -n "s;@$1@;"
-	echo -n "$2" | sed -e 's/;/\\;/g'
+    (   echononl "s;@$1@;"
+	_subst=`echo $2 | sed -e 's/;/\\;/g'`
+	echononl "$_subst"
 	echo ';g' ) >> $__cwd/config.sub
 }
 

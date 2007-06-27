@@ -32,7 +32,7 @@
 
 #include "file.private.h"
 
-#ifndef	lint
+#if 0
 static char *moduleid = 
 	"@(#)$Id$";
 #endif	/* lint */
@@ -270,7 +270,7 @@ long offset;
 char *str;
 int len;
 {
-	(void) fprintf(stderr, "mget @%d: ", offset);
+	(void) fprintf(stderr, "mget @%ld: ", offset);
 	__lf_showstr(stderr, (char *) str, len);
 	(void) fputc('\n', stderr);
 	(void) fputc('\n', stderr);

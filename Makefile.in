@@ -44,7 +44,7 @@ commoninstall: textonly
 	@INSTALL@ -d $(prefix)/@mandir@/man8
 	@INSTALL@ -d $(prefix)/@mandir@/man5
 	@INSTALL@ -d $(prefix)/@filterdir@
-	@INSTALL_MAGIC@@INSTALL_DATA@ -m 444 file/magic $(prefix)/@MAGIC@
+	@INSTALL_MAGIC@ -m 444 file/magic $(prefix)/@MAGIC@
 	@INSTALL_PROGRAM@ -m 511 textonly $(prefix)/@filterdir@
 
 install:  @DO_WHAT@

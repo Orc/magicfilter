@@ -128,7 +128,6 @@ void hex_dump(unsigned char *stuff_to_dump, int size, int fake_offset) {
 
     int line_loc, i, this_line_size;
     int dumped = 0;
-    int temp;
 
 
     /* some header stuff */

@@ -36,7 +36,7 @@
 #endif
 #include "file.private.h"
 
-#ifndef	lint
+#if 0
 static char *moduleid = 
 	"@(#)apprentice.c,v 3.0.1.1 1997/08/01 00:38:22 orc Exp";
 #endif	/* lint */

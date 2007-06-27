@@ -57,5 +57,6 @@ struct rule {
 
 extern struct rule *getline(FILE *);
 extern struct rule *rules;
+char * action_p(enum rule_action);
 
 #endif/*__RULE_D*/

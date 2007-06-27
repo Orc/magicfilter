@@ -24,7 +24,7 @@
  *
  * 4. This notice may not be removed or altered.
  */
-#ifndef	lint
+#if 0
 static char *moduleid = 
 	"@(#)$Id$";
 #endif	/* lint */
@@ -37,6 +37,15 @@ static char *moduleid =
 extern int getopt();
 extern int optind;
 extern char *optarg;
+
+#ifndef __P
+# if __STDC__ || __cplusplus
+#  define __P(a) a
+# else
+#  define __P(a) ()
+#  define const
+# endif
+#endif
 
 #include "file.h"
 

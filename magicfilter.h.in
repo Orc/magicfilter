@@ -33,6 +33,12 @@
 #include "rule.h"
 #include "config.h"
 
+#if HAS_MALLOC_H
+#  include <malloc.h>
+#elif HAS_SYS_MALLOC_H
+#  include <sys/malloc.h>
+#endif
+
 extern void xyzzy();
 extern void plugh(struct rule *, char *, int);
 
@@ -45,8 +51,14 @@ extern char *filetype;		/* the file type of the input file */
 extern int getaline(FILE*,char**,int*,int*);
 
 extern void trace(char*,struct rule*);
-
 extern int getoptionsandscript(int, char**);
+extern void reject(char*,...);
+
+extern void filter_it(char *, int, struct rule*);
+extern void pipe_it(char *, int, struct rule*);
+extern void cat_it(char *, int, struct rule*);
+
+extern void vis(FILE*, unsigned char*);
 
 #define MAGICFILTER_CONF "@confdir@/magicfilter.cf"
 

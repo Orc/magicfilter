@@ -24,7 +24,7 @@
  *
  * 4. This notice may not be removed or altered.
  */
-#ifndef	lint
+#if 0
 static char *moduleid = 
 	"@(#)$Id$";
 #endif	/* lint */

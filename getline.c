@@ -111,7 +111,6 @@ getarg(char **p)
 	else {
 	    if (**p == '\\' && (*p)[1]) {
 		int ct;
-		char c;
 
 		(*p)++;
 		switch (**p) {
@@ -152,7 +151,6 @@ getarg(char **p)
 void
 vis(FILE *output, unsigned char *s)
 {
-    char *pat;
     for ( ; *s ; ++s) {
 	switch (*s) {
 	    case '\r':	fputs("\\r", output);	continue;
@@ -182,7 +180,6 @@ getline(FILE *input)
 
     int idx, err;		/* current char in line, error return flag */
     char *p, *q, *hint;		/* pointers for disassembling the line */
-    int c;
 
     if (buflen == 0) {
 	/* initialize the line buffer the first time in
@@ -298,7 +295,7 @@ again:
 	++p;
 
     r->argv = malloc(1);
-    while (q = getarg(&p)) {
+    while ( (q = getarg(&p)) != 0) {
 	r->argv = realloc(r->argv, (3 + r->argc) * sizeof r->argv[0]);
 	if (r->argv == 0) {
 	    perror("getline::realloc");
