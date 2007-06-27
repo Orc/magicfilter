@@ -382,6 +382,7 @@ MF_PATH_INCLUDE () {
 # and fd 5 points to what used to be fd 1
 #
 AC_INIT () {
+    rm -f config.sub config.h config.mak
     __cwd=`pwd`
     exec 5>&1 1>$__cwd/config.log 2>&1
     AC_CONFIGURE_FOR=__AC_`echo $1 | sed -e 's/\..$//' | tr 'a-z' 'A-Z' | tr ' ' '_'`_D
@@ -640,11 +641,9 @@ AC_PROG_INSTALL () {
 
     PROG_INSTALL="$DEST${IS_BSD:+" -c"}"
 
-	cat >> $__cwd/config.sub << EOF
-s,@INSTALL@,$PROG_INSTALL,g
-s,@INSTALL_PROGRAM@,$PROG_INSTALL -s -m 755,g
-s,@INSTALL_DATA@,$PROG_INSTALL -m 444,g
-EOF
+    AC_SUB 'INSTALL' "$PROG_INSTALL"
+    AC_SUB 'INSTALL_PROGRAM' "$PROG_INSTALL -s -m 755"
+    AC_SUB 'INSTALL_DATA' "$PROG_INSTALL -m 444"
 }
 
 #
@@ -713,7 +712,7 @@ AC_FAIL() {
 AC_SUB() {
     (   echo -n "s;@$1@;"
 	echo -n "$2" | sed -e 's/;/\\;/g'
-	echo ';' ) >> $__cwd/config.sub
+	echo ';g' ) >> $__cwd/config.sub
 }
 
 #

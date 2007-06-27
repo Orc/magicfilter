@@ -76,7 +76,7 @@ if [ ! "$ac_local_magic" ]; then
 	ac_local_magic=T
     fi
 else
-    LOG "Using private magic file $AC_CONF/mf.magic"
+    LOG "Using private magic file $AC_CONFDIR/mf.magic"
 fi
 rm -f $$
 trap 1 2 3 9 15
@@ -84,7 +84,7 @@ trap 1 2 3 9 15
 if [ "$ac_local_magic" ]; then
     # if we're using local magic, manually write the substitution
     # information into the config files
-    AC_CONFIG MAGIC "$AC_CONF/mf.magic"
+    AC_DEFINE PATH_MAGIC \""$AC_CONFDIR"/mf.magic\"
     AC_SUB INSTALL_MAGIC ""
 else
     AC_SUB INSTALL_MAGIC ": "
