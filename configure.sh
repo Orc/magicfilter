@@ -113,11 +113,14 @@ else
     if AC_CHECK_HEADERS basis/options.h; then
 	if LIBS="-lbasis" AC_CHECK_FUNCS x_getopt; then
 	    AC_LIBS="$AC_LIBS -lbasis"
-	    AC_SUB XGETOPT
 	    HAVE_XGETOPT=T
 	fi
     fi
-    test "$HAVE_XGETOPT" || AC_SUB XGETOPT options.o
+fi
+if [ "$WITH_LPRNG" -o "$HAVE_XGETOPT" ]; then
+    AC_SUB XGETOPT ''
+else
+    AC_SUB XGETOPT options.o
 fi
 
 AC_CHECK_HEADERS malloc.h || AC_CHECK_HEADERS sys/malloc.h

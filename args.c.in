@@ -128,7 +128,12 @@ getoptionsandscript(int argc, char **argv)
     UNSET("ZOPT");
 #endif
 
-#ifndef WITH_LPRNG
+#ifdef WITH_LPRNG
+    if (argv[1] && strcmp(argv[1], "--version") == 0) {
+	fprintf(stderr, "%s\n", "Magicfilter @VERSION@");
+	exit(0);
+    }
+#else
     IGNORE;
     while ( (opt = GETOPT(argc, argv)) != EOF) {
 	switch (opt) {
@@ -178,15 +183,20 @@ getoptionsandscript(int argc, char **argv)
 		    exit(0);
 	}
     }
+#endif
 
-    if (script == 0)
-	if (OPTIND < argc)
+    if (script == 0) {
+#ifndef WITH_LPRNG
+	if (OPTIND < argc && argv[OPTIND])
 	    script = argv[OPTIND];
 	else {
+#endif
 	    fprintf(stderr, "%s: no printer driver specified\n", progname);
 	    exit(1);
+#ifndef WITH_LPRNG
 	}
 #endif
+    }
 
 #ifdef HAVE_BASENAME
     progname = basename(script);
