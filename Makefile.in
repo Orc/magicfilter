@@ -53,38 +53,47 @@ commoninstall: textonly magicfile
 
 install:  @DO_WHAT@
 
-install-traditional: traditional commoninstall install-manpages-t
+install-bin-t: traditional commoninstall
 	@INSTALL_PROGRAM@ -m 511 traditional $(prefix)/@exedir@/magicfilter-t
-	./mkmpp
-	for x in filters/*.def;do \
+
+install-bin: magicfilter commoninstall
+	@INSTALL_PROGRAM@ -m 511 magicfilter $(prefix)/@exedir@
+
+install-data-t: traditional commoninstall
+	@srcdir@/mkmpp
+	for x in @srcdir@/filters/*.def;do \
 	    ./mpp @exedir@/magicfilter-t $$x > $(prefix)/@filterdir@/`basename $$x .def`-filter; \
 	    chmod +x $(prefix)/@filterdir@/`basename $$x .def`-filter; \
 	done
 	@rm -f mpp
 
-install-manpages: VERSION
+install-data: magicfilter commoninstall
+	for x in @srcdir@/filters/*.def;do \
+	    sed -e 's,@MAGIC''FILTER@,@exedir@/magicfilter,' < $$x > $(prefix)/@filterdir@/`basename $$x .def`; \
+	    chmod +x $(prefix)/@filterdir@/`basename $$x .def`; \
+	done
+
+install-man: VERSION commoninstall
 	@SED@ -n -e 's/&PROGRAM&/magicfilter/g' -e 's/^MAN //p' -e @LPD_OPTS@ < magicfilter.8templ > $$$$; \
 	@INSTALL_DATA@ -m 444 $$$$ $(prefix)/@mandir@/man8/magicfilter.8; \
 	rm -f $$$$
 	@INSTALL_DATA@ -m 444 magicfilter.5 $(prefix)/@mandir@/man5
 
-install-manpages-t: VERSION
+install-man-t: VERSION commoninstall
 	@SED@ -n -e 's/&PROGRAM&/magicfilter-t/g' -e 's/^MAN //p' -e 's/^TRAD//p' -e @LPD_OPTS@ < magicfilter.8templ > $$$$; \
 	@INSTALL_DATA@ -m 444 $$$$ $(prefix)/@mandir@/man8/magicfilter-t.8; \
 	rm -f $$$$
 	@INSTALL_DATA@ -m 444 magicfilter-t.5 $(prefix)/@mandir@/man5
 
-install-magicfilter: magicfilter commoninstall install-manpages
-	@INSTALL_PROGRAM@ -m 511 magicfilter $(prefix)/@exedir@
-	for x in filters/*.def;do \
-	    sed -e 's,@MAGIC''FILTER@,@exedir@/magicfilter,' < $$x > $(prefix)/@filterdir@/`basename $$x .def`; \
-	    chmod +x $(prefix)/@filterdir@/`basename $$x .def`; \
-	done
+install-traditional: install-man-t install-bin-t install-data-t
+
+install-magicfilter: install-man install-bin install-data 
 
 export: VERSION
 	V=`cat VERSION`; \
 	if bk export -tplain -r+ /tmp/magicfilter-$$V; then \
 	    cd /tmp; \
+	    (cd magicfilter-$$V;./joincfg.sh); \
 	    tar czf magicfilter-$$V.tar.gz magicfilter-$$V; \
 	    rm -rf magicfilter-$$V; \
 	fi
