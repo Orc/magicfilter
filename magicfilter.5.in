@@ -54,10 +54,56 @@ Set this to false if your printer cannot handle text, but must have it
 formatted in some way.  PostScript-only printers require this, and use
 pstext or enscript to format plain text for printing.
 .TP
-define(HANDLE_TEXT,`command')dnl
+define(PRINTER,`command')dnl
+This option makes
+.B magicfilter
+send all printer-ready output (see HANDLE_TEXT, below, for the
+exception to this rule) to
+.I command
+for printing instead of just dumping the printer-ready output
+to stdout.
+This is useful when
+you wish to use a networked printer but your printer server 
+software doesn't allow you to put a filter on a remote printer.
+.TP
+define(HANDLE_TEXT,`action command')dnl
 If the printer needs any special processing to do text, it will be set
 here.  This is used on H-P printers, for example, to spit out PCL reset
 codes before printing out plain text.
+.B NOTE
+that
+HANDLE_TEXT
+overrides
+PRINTER
+\-\- 
+this is so you can redirect output to different printer devices for
+output that needs processing and output that is plain text.
+Also
+note that
+HANDLE_TEXT
+.B does not
+use the same sort of argument that
+PRINTER 
+does;  
+PRINTER
+expects a command (like 
+.I lpr
+.IR -Pfoolp )
+while
+HANDLE_TEXT
+expects an action followed by a command (like
+.B filter
+.IR 'printer\ reset'\ 'page\ flush' ),
+and that the
+.B action
+must be one of 
+.IR filter ,
+.IR ffilter ,
+.IR cat ,
+or
+.IR pipe .
+Any other action is very likely to result in a printer filter that
+takes a lot of time to reject your printer jobs.
 .SS THE CONFIGURATION FILE
 The configuration file is used by
 .B magicfilter
@@ -176,7 +222,7 @@ The environment variables
 .BR LPHOST ,
 and
 .B LPINDENT
-is set to the values of the user, host and indent options passed to
+are set to the values of the user, host and indent options passed to
 .BR magicfilter .
 To get around the way some filters (
 .IR ghostscript )
@@ -267,12 +313,51 @@ You will probably want to examine the sample configuration files
 included with the
 .B magicfilter
 distribution before creating your own.
+.PP
+Note that the
+.B .def
+files are processed by
+.B m4
+so you need to pay attention to what they contain if you write
+your own.
+In particular, you should carefully avoid using constructs that
+look like
+.B m4
+macros
+and you need to use the escapes
+.I \\\\{
+for
+.IR ( ,
+.I \\\\}
+for
+.IR ) ,
+.I \\\\-
+for
+.IR ' ,
+and
+.I \\\\+
+for
+.IR ` .
+Failing to do that may result in unexpected things happening to
+your printer (most likely nothing printing with no error messages
+at all, but it's equally possible that the printer will print
+something you don't particularly want it to print.)
+
 .SH BUGS
 Currently, there is no protection against the
 .B pipe
 or
 .B fpipe
 facilities going into an infinite loop.
+.PP
+.B Magicfilter
+is developed with some fairly ancient and creaky printers, so many of the
+fancier features supported here are less well tested than I would like.
+.PP
+The documentation for the
+.B reject
+action lies when it says that it attempts to send mail to the person
+who sent the rejected job.
 .SH AUTHOR
 H. Peter Anvin <hpa@zytor.com>, David Parsons <orc@pell.chi.il.us>
 .SH SEE ALSO

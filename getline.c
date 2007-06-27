@@ -117,6 +117,10 @@ getarg(char **p)
 		    case 'r':	*r = '\r';	break;
 		    case 'n':	*r = '\n';	break;
 		    case 't':	*r = '\t';	break;
+		    case '{':	*r = '(';	break;
+		    case '}':	*r = ')';	break;
+		    case '-':	*r = '\'';	break;
+		    case '+':	*r = '`';	break;
 		    case 'e':	*r = '\033';	break;
 		    case 'v':	*r = '\v';	break;	/* vtab */
 		    case '0': case '1': case '2': case '3': case '4':
@@ -279,7 +283,7 @@ again:
 
     if (idx == NRMAPPINGS) {
 	regfree( &(r->regex) );
-	fprintf(stderr, "unknown action at line %d\n", lineno);
+	fprintf(stderr, "unknown action (%s) at line %d\n", q, lineno);
 	goto again;
     }
 

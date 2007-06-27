@@ -76,6 +76,18 @@
 	option.   Do this if you're running LPRng and magicfilter
 	fails on you.
 
+    --use-fifo=YES
+	Pass the output from ghostscript to a fifo, instead of simply
+	piping it to the output device.
+
+    --with-pcl
+	Look for either the hp2pdm or lj2ps programs to print pcl
+	on printers that don't support it.   This is not done by
+	default because both of these programs only support pcl4
+	and people expecting pcl5 to work may be unpleasantly
+	surprised.
+
+
 * Run "make".
 
 * Run "make install".

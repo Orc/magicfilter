@@ -1,30 +1,37 @@
+#
+`# magicfilter for 'ifdef(`Vendor',`the 'Vendor` ',)Printer
+#
 dnl
 dnl Build the output-postscript filter; if this is a postscript file,
 dnl just dump it to the printer, otherwise if a DEVICE is specified
 dnl and either DPI or PS_OPTIONS are set, run ghostscript, else fall
 dnl over dead.
 dnl
-define(PSopts,-q -dSAFER -dNOPAUSE ifdef(`papersize',`-sPAPERSIZE='papersize ,)ifdef(`DEVICE',`-sDEVICE='DEVICE ,)ifdef(`DPI', `-r'DPI ,)defn(PS_OPTIONS) -sOutputFile=@GSOUT@ - -c quit)dnl
-define(PSfilter,ifelse(POSTSCRIPT,true,
-			    postscript,
-			    ifdef(`PATH_GS',
-				ifdef(`DEVICE', filter PATH_GS PSopts,
-				    ifdef(`PS_OPTIONS', filter PATH_GS PSopts,
-					    reject)),reject)))dnl
-define(PCLfilter, ifelse(PCL,true,cat,reject))dnl
-define(PJLfilter, ifelse(PJL,true,cat,ifelse(PCL,true,cat,reject)))dnl
-define(PSfromText, ifelse(defn(`PSfilter'), reject,
-			    reject,
-			    ifdef(`PATH_PSTEXT',
-				pipe/postscript/ PATH_PSTEXT ifdef(`papersize',`-T'papersize,),
-				ifdef(`PATH_NENSCRIPT',
-				    pipe/postscript/ PATH_NENSCRIPT ifdef(`papersize',`-T'papersize,) @NENSCRIPT_QUIET@ -p -,
-				    reject))))dnl
-#
-`# magicfilter for 'ifdef(`Vendor',`the 'Vendor` ',)Printer
-#
 
+define(Cat,`ifdef(`PRINTER',`pipe/>forward/',cat)')dnl
+define(Filter,`ifdef(`PRINTER',`pipe/>forward/',filter)')dnl
+define(PostScript,`ifdef(`PRINTER',`pipe/>forward/',postscript)')dnl
+define(Copy,`ifdef(`PRINTER',filter defn(`PRINTER'),cat)')dnl
+ifdef(`PRINTER', `/>forward/	Copy')
+
+define(PSopts,`-q -dBATCH -dPARANOIDSAFER -dSAFER -dNOPAUSE ifdef(`papersize',`-sPAPERSIZE='papersize,) ifdef(`DEVICE',`-sDEVICE='DEVICE,) ifdef(`DPI', `-r'DPI ,) `ifdef(`PS_OPTIONS',defn(`PS_OPTIONS'))' -sOutputFile=@GSOUT@ - -c quit')dnl
+define(PScmd, ifdef(`PATH_GS',
+		`ifdef(`DEVICE', Filter PATH_GS defn(`PSopts'),
+		    `ifdef(`PS_OPTIONS', Filter PATH_GS defn(`PSopts'),
+			reject)')'))dnl
+define(PSfilter,`ifelse(POSTSCRIPT,true, PostScript, defn(`PScmd'))')dnl
+define(PDFfilter, `ifdef(`PATH_ACROREAD',
+			    pipe/postscript/ PATH_ACROREAD -toPostScript,
+		    `ifelse(defn(`PScmd'),reject,
+			ifdef(`PATH_GS',`f'Filter PATH_GS -sDEVICE=psrgb defn(`PSopts') $FILE,reject),
+			`f'defn(`PScmd') $FILE)')')dnl
 ifelse(defn(`PSfilter'),reject,,
+define(PSfromText, 
+	`ifdef(`PATH_PSTEXT',
+	    pipe/postscript/ PATH_PSTEXT ifdef(`papersize',`-T'papersize,),
+	    `ifdef(`PATH_NENSCRIPT',
+		pipe/postscript/ PATH_NENSCRIPT ifdef(`papersize',`-T'papersize,) @NENSCRIPT_QUIET@ -p -,
+		    reject)')')dnl
 #
 # Portable imagemaps.
 #
@@ -50,16 +57,11 @@ ifelse(defn(`PSfilter'),reject,,
 /fax/		ifdef(`PATH_G3TOPBM',pipe/p[gbp]m/ PATH_G3TOPBM,reject)
 )dnl
 
-/pdf/		ifdef(`PATH_ACROREAD',pipe/postscript/ PATH_ACROREAD -toPostScript,
-		    ifdef(`PATH_GS',
-			ifdef(`DEVICE', ffilter PATH_GS PSopts $FILE,
-			    ifdef(`PS_OPTIONS', ffilter PATH_GS PSopts $FILE,
-				    reject)),reject))
-
 #
 # compressed formats.
 #
-/compress/	ifdef(`PATH_ZCAT', pipe PATH_ZCAT, ifdef(`PATH_GZIP', pipe PATH_GZIP -dc, reject))
+/compress/	ifdef(`PATH_ZCAT', pipe PATH_ZCAT,
+		    `ifdef(`PATH_GZIP', pipe PATH_GZIP -dc, reject)')
 /gzip/		ifdef(`PATH_GZIP', pipe PATH_GZIP -dc, reject)
 /packed/	ifdef(`PATH_GZIP', pipe PATH_GZIP -dc, reject)
 /frozen/	ifdef(`PATH_GZIP', pipe PATH_GZIP -dc, reject)
@@ -73,7 +75,15 @@ dnl
 #
 # printer languages.
 #
+ifelse(defn(`PSfilter'),reject,
+define(`PCLprint',reject)dnl,
+define(`PCLprint',`ifdef(`PATH_UNPCL',pipe PATH_UNPCL @UNPCL_FLAGS@,reject)')dnl
+)dnl
+define(PCLfilter, `ifelse(PCL,true,Copy,PCLprint)')dnl
+define(PJLfilter, `ifelse(PJL,true,Copy,`ifelse(PCL,true,Copy,PCLprint)')')dnl
+
 /postscript/	PSfilter
+/pdf/		PDFfilter
 /pcl/		PCLfilter
 /pjl/		PJLfilter
 
@@ -85,8 +95,9 @@ dnl
 #
 # text, finally
 #
-/text/		ifdef(`HANDLE_TEXT', defn(`HANDLE_TEXT'),
-		    ifelse(defn(`TEXT'),false,
-			PSfromText,
-			text defn(`TEXT_ARGS')))
+/text/		`ifdef(`PRINTER',defn(`Copy'),
+		    `ifdef(`HANDLE_TEXT',defn(`HANDLE_TEXT'),
+			`ifelse(defn(`TEXT'),false,
+			    defn(`PSfromText'),
+			    text defn(`TEXT_ARGS'))')')
 # EOF

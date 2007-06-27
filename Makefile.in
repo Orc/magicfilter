@@ -88,6 +88,9 @@ export: VERSION
 	    rm -rf magicfilter-$$V; \
 	fi
 
+spotless distclean: clean
+	rm -f @GENERATED_FILES@ @CONFIGURE_FILES@
+
 clean:
 	rm -f $(OBJS) magic.c $(PROGS) $(LIB) @XGETOPT@
 	cd file && $(MAKE) clean

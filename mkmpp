@@ -26,7 +26,15 @@ if [ ! -r "$2" ]; then
     exit 1
 fi
 
-( m4 $2 - << \JEOF
+path=$1
+def=$2
+shift 2
+while [ $# -gt 1 ]; do
+    defines="$defines -D$1=$2"
+    shift 2
+done
+
+( m4 $defines $def - << \JEOF
 EOF
 if test -r config.h; then
     grep PATH_ config.h | sed -e 's/^#define */define(/' \
@@ -34,6 +42,6 @@ if test -r config.h; then
 fi
 cat magic.m4
 echo JEOF
-echo ') | sed -e s,@MAGICFILTER@,$1,'
+echo ') | sed -e s,@MAGICFILTER@,$path,'
 chmod +x mpp
 exit 0

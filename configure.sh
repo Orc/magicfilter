@@ -10,7 +10,8 @@ ac_help='--filterdir=DIR		where to put printer filters (prefix/sbin/printers)
 --use-local-magic	install a private magic file
 --use-fifo		pipe the output from gs through a fifo
 --with-lprng		build a stupid filter for use with lprng
---with-papersize=SIZE	set the default paper size for gs/pstext'
+--with-papersize=SIZE	set the default paper size for gs/pstext
+--with-pcl		use hp2pcl or lj2ps to print pcl on non-pcl printers'
 
 LOCAL_AC_OPTIONS='
 case X"$1" in
@@ -33,9 +34,7 @@ esac'
 # load in the configuration file
 #
 TARGET=magicfilter
-USE_FIFO=T		# default to piping ghostscript via a fifo
 . ./configure.inc
-
 
 # and away we go
 #
@@ -146,6 +145,15 @@ else
     AC_SUB NENSCRIPT_QUIET ''
     MF_PATH_INCLUDE PSTEXT pstext
 fi
+
+# if the user is brave, look for a pcl to generic format converter
+#
+test "$WITH_PCL" && MF_PATH_INCLUDE UNPCL hp2pbm lj2ps
+
+case X"$CF_UNPCL" in
+X*hp2pbm)  AC_SUB UNPCL_FLAGS '-p' ;;
+X*)        AC_SUB UNPCL_FLAGS '' ;;
+esac
 
 paper=$WITH_PAPERSIZE
 
