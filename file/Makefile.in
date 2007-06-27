@@ -23,10 +23,11 @@
 # 4. This notice may not be removed or altered.
 
 CC      = @CC@
-CFLAGS  = -DMAGIC='"@MAGIC@"' @CFLAGS@
+CFLAGS  = -DMAGIC='"@MAGIC@"' @CFLAGS@ -I@srcdir@/file
 LFLAGS  = @LDFLAGS@
 LIBRARY = libfile.a
 RANLIB  = @RANLIB@
+VPATH   = @srcdir@/file
 
 FILEOBJ=file.o
 FILE   =file
@@ -55,7 +56,7 @@ $(LIBRARY): $(OBJECTS)
 	$(CC) $< -c -o $@ $(CFLAGS)
 
 magic:
-	for x in Magdir/*;do \
+	for x in @srcdir@/file/Magdir/*;do \
 	    test -f $$x && cat $$x; \
 	done > magic
 

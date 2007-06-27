@@ -40,6 +40,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 
 #include "rule.h"
 #include "magicfilter.h"
@@ -215,15 +216,17 @@ main(int argc, char **argv)
 
 
 
-#ifndef NOFE
+#ifdef NOFE
+    be(script, 1);
+#else
     if (pipe(input) == -1 || pipe(output) == -1) {
 	perror("pipe");
 	exit(1);
     }
 
     /* split ourselves into 3 pieces:
-     *	1) fe, which concatinates stdin and $magic
-     *	2) m4, which processes
+     *	1) fe, which concatenates stdin and $magic
+     *	2) m4, which processes  " "
      *	3) be, which processes the output
      */
     if ((child=fork()) < 0) {
@@ -245,24 +248,12 @@ main(int argc, char **argv)
 	close(input[1]);
 	close(output[0]);
 	m4(input[0], output[1]);
-	exit(0);	/* just in case m4 returns */
+	exit(99);	/* just in case m4 returns */
     }
     close(output[1]);
     close(input[0]);
     close(input[1]);
     be(output[0], 1);
-
-    waitpid(child, &status, 0);
-    if (WIFEXITED(status) == 0) {
-	fprintf(stderr, "m4 terminated abnormally\n");
-	exit(1);
-    }
-    else if (WEXITSTATUS(status) != 0) {
-	fprintf(stderr, "m4 returned status %d\n", WEXITSTATUS(status));
-	exit(1);
-    }
-#else
-    be(script, 1);
 #endif
 
     close(script);
@@ -270,6 +261,9 @@ main(int argc, char **argv)
     apprentice(PATH_MAGIC, 0);
 
     umask(077);	/* hide the intermediate files from everyone other than lpd */
+#ifdef SIGCHLD
+    signal(SIGCHLD,SIG_DFL);
+#endif
     xyzzy();
 
     exit(0);

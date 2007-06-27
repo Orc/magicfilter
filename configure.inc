@@ -1,4 +1,4 @@
-#   @(#) configure.inc 1.21@(#)
+#   @(#) configure.inc 1.23@(#)
 #   Copyright (c) 1999 David Parsons. All rights reserved.
 #   
 #   Redistribution and use in source and binary forms, with or without
@@ -43,8 +43,21 @@ ac_standard="--src=DIR		where the source lives (.)
 
 __fail=exit
 
+if dirname B/A 2>/dev/null >/dev/null; then
+__ac_dirname() {
+    dirname "$1"
+}
+else
+__ac_dirname() {
+    echo "$1" | sed -e 's:/[^/]*$::'
+}
+fi
+
 ac_progname=$0
 ac_configure_command="$*"
+
+AC_SRCDIR=`__ac_dirname "$ac_progname"`
+test "$AC_SRCDIR" = "$ac_progname" && AC_SRCDIR=`pwd`
 
 while [ $# -gt 0 ]; do
     unset matched
@@ -54,7 +67,7 @@ while [ $# -gt 0 ]; do
 	AC_SRCDIR=$2
 	shift 2;;
 
-    X--src=*|X--srcdir==*)
+    X--src=*|X--srcdir=*)
 	AC_SRCDIR=`echo "$1" | sed -e 's/^[^=]*=//'`
 	shift 1 ;;
 
@@ -500,7 +513,6 @@ EOF
     AC_LIBDIR=${AC_LIBDIR:-$AC_PREFIX/lib}
     AC_MANDIR=${AC_MANDIR:-$AC_PREFIX/man}
     AC_CONFDIR=${AC_CONFDIR:-/etc}
-    AC_SRCDIR=${AC_SRCDIR:-`pwd`}
 
     AC_SUB 'srcdir'  "$AC_SRCDIR"
     AC_SUB 'prefix'  "$AC_PREFIX"
@@ -761,15 +773,19 @@ ${CC:+CC=${Q}${CC}${Q}} ${CFLAGS:+CFLAGS=${Q}${CFLAGS}${Q}} $ac_progname $ac_con
 EOF
 	chmod +x config.cmd
 
+	__d=$AC_SRCDIR
 	for makefile in $*;do
-	    if test -r ${makefile}.in; then
+	    if test -r $__d/${makefile}.in; then
 		LOG "generating $makefile"
-		$AC_SED_PROG -f config.sub < ${makefile}.in > $makefile
+		mkdir -p `__ac_dirname ./$makefile` 2>/dev/null
+		$AC_SED_PROG -f config.sub < $__d/${makefile}.in > $makefile
 		__generated_files="$__generated_files $makefile"
 	    else
 		LOG "WARNING: ${makefile}.in does not exist!"
 	    fi
 	done
+	unset __d
+
     else
 	echo 
     fi
