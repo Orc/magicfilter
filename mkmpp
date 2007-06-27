@@ -37,8 +37,8 @@ done
 ( m4 $defines $def - << \JEOF
 EOF
 if test -r config.h; then
-    grep PATH_ config.h | sed -e 's/^#define */define(/' \
-			      -e 's/ *"\([^"]*\)".*$/,\1)dnl/'
+    grep PATH_ config.h | grep '"' | sed -e 's/^#define */define(/' \
+			                 -e 's/ *"\([^"]*\)".*$/,\1)dnl/'
 fi
 cat magic.m4
 echo JEOF

@@ -30,6 +30,7 @@
 #define __MAGICFILTER_D
 
 #include <stdio.h>
+#include <magic.h>
 #include "rule.h"
 #include "config.h"
 
@@ -39,6 +40,7 @@
 #  include <sys/malloc.h>
 #endif
 
+extern magic_t poof;
 extern void xyzzy();
 extern void plugh(struct rule *, char *, int);
 

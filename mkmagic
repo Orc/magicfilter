@@ -16,9 +16,9 @@ cat - << EOF
 EOF
 echo "char *m4template[] = {"
 if test -r config.h; then
-    grep PATH_ config.h | sed -e 's/^#define */define(/' \
-			      -e 's/ *"\([^"]*\)".*$/,`\1'\'')dnl/' \
-			      -e 's/^.*$/	"&\\n",/'
+    grep PATH_ config.h | grep '"' | sed -e 's/^#define */define(/' \
+			                 -e 's/ *"\([^"]*\)".*$/,`\1'\'')dnl/' \
+			                 -e 's/^.*$/	"&\\n",/'
 fi
 cat $1 | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/^/	"/' -e 's/$/\\n",/'
 echo "	0 };"

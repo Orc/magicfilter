@@ -42,13 +42,16 @@
 #include <string.h>
 #include <signal.h>
 
+#include <magic.h>
+
 #include "rule.h"
 #include "magicfilter.h"
-#include "file/file.h"
 
 int debug = 0;
 char *progname;
 int cflag = 0;
+
+magic_t poof = 0;
 
 #ifndef NOFE
 /* fe() concatenates stdin with the m4 template, writes it to stdout.
@@ -265,7 +268,9 @@ main(int argc, char **argv)
 
     close(script);
 
-    apprentice(PATH_MAGIC, 0);
+    if ( (poof = magic_open(0)) == 0)
+	exit(1);
+    magic_load(poof,PATH_MAGIC);
 
     umask(077);	/* hide the intermediate files from everyone other than lpd */
 #ifdef SIGCHLD

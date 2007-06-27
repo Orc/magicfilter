@@ -31,7 +31,7 @@
  */
 
 #include "magicfilter.h"
-#include <file.h>
+#include <magic.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -49,7 +49,7 @@ xyzzy()
      */
     size = read(0, bfr, sizeof bfr);
 
-    ftype = string_magic(bfr, size);
+    ftype = magic_buffer(poof, bfr, size);
     if (filetype == 0)
 	filetype = strdup(ftype);
 

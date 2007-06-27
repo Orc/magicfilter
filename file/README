@@ -56,7 +56,7 @@ file.1 - man page for the command
 magic.4 - man page for the magic file, courtesy Guy Harris.
 	Install as magic.4 on USG and magic.5 on V7 or Berkeley; cf Makefile.
 file.c - main program
-file.h - header file
+magic.h - header file
 fsmagic.c - first set of tests the program runs, based on filesystem info
 is_tar.c - knows about tarchives (courtesy John Gilmore).
 magdir - directory of /etc/magic pieces

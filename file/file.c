@@ -33,6 +33,7 @@ static char *moduleid =
 #include <string.h>
 #include <errno.h>
 #include <sys/param.h>	/* for MAXPATHLEN */
+#include <malloc.h>
 
 extern int getopt();
 extern int optind;
@@ -47,7 +48,7 @@ extern char *optarg;
 # endif
 #endif
 
-#include "file.h"
+#include "magic.h"
 
 #ifdef S_IFLNK
 # define USAGE  "Usage: %s [-czL] [-f namefile] [-m magicfile] file...\n"
@@ -65,6 +66,8 @@ extern char *optarg;
 
 static void unwrap	__P((char *fn));
 
+static magic_t poof = 0;
+
 /*
  * main - parse arguments and handle options
  */
@@ -74,8 +77,9 @@ int argc;
 char *argv[];
 {
 	int c;
-	int check = 0, didsomefiles = 0, errflg = 0, ret = 0;
-	char *magicfile = MAGIC;
+	int didsomefiles = 0, errflg = 0, ret = 0;
+	int flags = 0;
+	char *magicfile = 0;
 
 	if ((progname = strrchr(argv[0], '/')) != NULL)
 		progname++;
@@ -88,10 +92,10 @@ char *argv[];
 			magic_emit_struct(1);
 			/* fall into 'c' */
 		case 'c':
-			++check;
+			flags |= MAGIC_CHECK;
 			break;
 		case 'd':
-			magic_debug(1);
+			flags |= MAGIC_DEBUG;
 			break;
 		case 'f':
 			unwrap(optarg);
@@ -99,14 +103,14 @@ char *argv[];
 			break;
 #ifdef S_IFLNK
 		case 'L':
-			magic_followlink(1);
+			flags |= MAGIC_SYMLINK;
 			break;
 #endif
 		case 'm':
 			magicfile = optarg;
 			break;
 		case 'z':
-			magic_zflag(1);
+			flags |= MAGIC_COMPRESS;
 			break;
 		case '?':
 		default:
@@ -118,12 +122,15 @@ char *argv[];
 		exit(2);
 	}
 
-	ret = apprentice(magicfile, check);
-	if (check)
-		exit(ret);
+
+	if ( (poof = magic_open(flags)) == 0)
+	    exit(1);
+	ret = magic_load(poof, magicfile);
+	if (flags & MAGIC_CHECK)
+	    exit(ret);
 
 	if (optind == argc && !didsomefiles) {
-		fprintf(stdout, "%s\n", file_magic(0));
+		fprintf(stdout, "%s\n", magic_file(poof, 0));
 	}
 	else {
 		int i, wid, nw;
@@ -133,7 +140,7 @@ char *argv[];
 				wid = nw;
 		}
 		for (; optind < argc; optind++)
-			fprintf(stdout, "%.*s: %s\n", wid, argv[optind], file_magic(argv[optind]));
+			fprintf(stdout, "%.*s: %s\n", wid, argv[optind], magic_file(poof, argv[optind]));
 	}
 
 	return 0;
@@ -167,7 +174,7 @@ char *fn;
 
 	while (fgets(buf, MAXPATHLEN, f) != NULL) {
 		buf[strlen(buf)-1] = '\0';
-		fprintf(stdout, "%.*s: %s\n", wid, buf, file_magic(buf));
+		fprintf(stdout, "%.*s: %s\n", wid, buf, magic_file(poof,buf));
 	}
 
 	(void) fclose(f);

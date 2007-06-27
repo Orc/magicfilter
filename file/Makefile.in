@@ -25,7 +25,7 @@
 CC      = @CC@
 CFLAGS  = -DMAGIC='"@MAGIC@"' @CFLAGS@ -I@srcdir@/file
 LFLAGS  = @LDFLAGS@
-LIBRARY = libfile.a
+LIBRARY = libmagic.a
 RANLIB  = @RANLIB@
 VPATH   = @srcdir@/file
 
@@ -65,7 +65,7 @@ $(FILE):   file.o $(LIBRARY)
 
 ascmagic.o:	names.h
 
-compress.o apprentice.o ascmagic.o file.o fsmagic.o print.o softmagic.o: file.h
+compress.o apprentice.o ascmagic.o file.o fsmagic.o print.o softmagic.o: magic.h
 
 clean:
-		rm -f $(TARGETS) *.o $(LIBRARY)
+	rm -f $(TARGETS) *.o $(LIBRARY)

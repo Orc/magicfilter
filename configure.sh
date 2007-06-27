@@ -50,30 +50,38 @@ else
     AC_SUB GSOUT '-'
 fi
 
-if [ ! "$USE_LOCAL_MAGIC" ]; then
-    case $ac_os in
-    [Ff]ree[Bb][Ss][Dd])magicpath=/etc:/usr/etc:/usr/share/misc ;;
-    *)			magicpath=/etc:/usr/etc: ;;
-    esac
-
-    # check to see if the system magic file is moderately recent
-    #
-    trap "rm -f $$" 1 2 3 9 15
-    echo "@PJL JOB" > $$
-    F=`file $$ 2>/dev/null | grep -i pjl`
-    echo "%PDF-1.1" > $$
-    G=`file $$ 2>/dev/null | grep -i pdf`
-
-    if [ "$F" -a "$G" ]; then
-	save_AC_PATH=$AC_PATH
-	AC_PATH=$magicpath MF_PATH_INCLUDE MAGIC -r magic || USE_LOCAL_MAGIC=T
-	AC_PATH=$save_AC_PATH
-    else
-	LOG "file(1) is too old -- using private magic file"
-	USE_LOCAL_MAGIC=T
-    fi
-else
+BUILD_MAGIC=T
+if [ "$USE_LOCAL_MAGIC" ]; then
     LOG "Using private magic file $AC_CONFDIR/mf.magic"
+else
+    if AC_LIBRARY magic_open -lmagic; then
+	LOG "Your system has a modern libmagic.  We'll use it."
+	unset BUILD_MAGIC
+    fi
+
+    if [ "$BUILD_MAGIC" ]; then
+	case $ac_os in
+	[Ff]ree[Bb][Ss][Dd])magicpath=/etc:/usr/etc:/usr/share/misc ;;
+	*)			magicpath=/etc:/usr/etc: ;;
+	esac
+
+	# check to see if the system magic file is moderately recent
+	#
+	trap "rm -f $$" 1 2 3 9 15
+	echo "@PJL JOB" > $$
+	F=`file $$ 2>/dev/null | grep -i pjl`
+	echo "%PDF-1.1" > $$
+	G=`file $$ 2>/dev/null | grep -i pdf`
+
+	if [ "$F" -a "$G" ]; then
+	    save_AC_PATH=$AC_PATH
+	    AC_PATH=$magicpath MF_PATH_INCLUDE MAGIC -r magic || USE_LOCAL_MAGIC=T
+	    AC_PATH=$save_AC_PATH
+	else
+	    LOG "file(1) is too old -- using private magic file"
+	    USE_LOCAL_MAGIC=T
+	fi
+    fi
 fi
 rm -f $$
 trap 1 2 3 9 15
@@ -84,8 +92,21 @@ if [ "$USE_LOCAL_MAGIC" ]; then
     AC_CONFIG MAGIC "$AC_CONFDIR"/mf.magic
     AC_SUB INSTALL_MAGIC "$PROG_INSTALL"
 else
+    AC_DEFINE PATH_MAGIC 0
     AC_SUB INSTALL_MAGIC ":"
 fi
+if [ "$BUILD_MAGIC" ]; then
+    AC_SUB LIBMAGIC file/libmagic.a
+    AC_SUB MAGIC_HEADER "-I$AC_SRCDIR/file"
+    AC_SUB MAGIC_LIB    "-Lfile"
+    AC_SUB MAKE_MAGIC	"cd file \&\& make"
+else
+    AC_SUB LIBMAGIC ""
+    AC_SUB MAGIC_HEADER ""
+    AC_SUB MAGIC_LIB ""
+    AC_SUB MAKE_MAGIC ":"
+fi
+
 AC_SUB DO_WHAT install-$TARGET
 
 # AC_PROG_LN_S
@@ -192,9 +213,9 @@ MF_PATH_INCLUDE ACROREAD acroread
  
 # MF_PROG_GNU_ZCAT($ZCAT)
 
-save_AC_PATH=$AC_PATH
-AC_PATH=/usr/lib:/usr/sbin:/usr/bin:/bin:/sbin MF_PATH_INCLUDE SENDMAIL sendmail smail mail Mail
-AC_PATH=$save_AC_PATH
+#save_AC_PATH=$AC_PATH
+#AC_PATH=/usr/lib:/usr/sbin:/usr/bin:/bin:/sbin MF_PATH_INCLUDE SENDMAIL sendmail smail mail Mail
+#AC_PATH=$save_AC_PATH
 
 AC_CHECK_HEADERS memory.h
 AC_CHECK_HEADERS paths.h

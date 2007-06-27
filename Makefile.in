@@ -3,18 +3,18 @@
 OBJS=getline.o xyzzy.o actions.o magic.o trace.o reject.o args.o getaline.o
 LIB     = libmf.a
 CC      = @CC@
-LDFLAGS = -Lfile -L. @LDFLAGS@
-CFLAGS  = -I. -I@srcdir@ -I@srcdir@/file @CFLAGS@
-LIBES   = -lmf -lfile @LIBS@
+LDFLAGS = @MAGIC_LIB@ -L. @LDFLAGS@
+CFLAGS  = -I. -I@srcdir@ @MAGIC_HEADER@ @CFLAGS@
+LIBES   = -lmf -lmagic @LIBS@
 RANLIB  = @RANLIB@
 PROGS=traditional magicfilter mpp textonly
-FILE	= file/libfile.a
 VPATH   = @srcdir@
+MAGIC	= @LIBMAGIC@
 
 all: $(PROGS)
 
-$(FILE):
-	cd file && $(MAKE) all
+libmagic @LIBMAGIC@:
+	@MAKE_MAGIC@ all
 
 textonly: contrib/textonly.c
 	$(CC) $(CFLAGS) -o textonly $<
@@ -22,10 +22,10 @@ textonly: contrib/textonly.c
 mpp: magic.m4 mkmpp
 	@srcdir@/mkmpp magic.m4
 
-traditional: $(LIB) fe.c $(FILE)
+traditional: $(LIB) fe.c @LIBMAGIC@
 	$(CC) $(CFLAGS) $(LDFLAGS) -DNOFE -o traditional @srcdir@/fe.c $(LIBES)
 
-magicfilter: $(LIB) fe.c $(FILE)
+magicfilter: $(LIB) fe.c @LIBMAGIC@
 	$(CC) $(CFLAGS) $(LDFLAGS) -o magicfilter @srcdir@/fe.c $(LIBES)
 
 $(OBJS): rule.h magicfilter.h
@@ -40,14 +40,14 @@ ignore @XGETOPT@: basis/options.h basis/options.c
 magic.c: magic.m4 mkmagic config.h
 	@srcdir@/mkmagic magic.m4
 
-magicfile: file/magic
-	cd file && make magic
+cfmagic: file/magic
+	@MAKE_MAGIC@ magic
 
-commoninstall: textonly magicfile
-	@INSTALL@ -d $(prefix)/@exedir@
-	@INSTALL@ -d $(prefix)/@mandir@/man8
-	@INSTALL@ -d $(prefix)/@mandir@/man5
-	@INSTALL@ -d $(prefix)/@filterdir@
+commoninstall: textonly cfmagic
+	@INSTALL_DIR@ $(prefix)/@exedir@
+	@INSTALL_DIR@ $(prefix)/@mandir@/man8
+	@INSTALL_DIR@ $(prefix)/@mandir@/man5
+	@INSTALL_DIR@ $(prefix)/@filterdir@
 	@INSTALL_MAGIC@ -m 444 file/magic $(prefix)/@MAGIC@
 	@INSTALL_PROGRAM@ -m 511 textonly $(prefix)/@filterdir@
 
@@ -103,7 +103,7 @@ spotless distclean: clean
 
 clean:
 	rm -f $(OBJS) magic.c $(PROGS) $(LIB) @XGETOPT@
-	cd file && $(MAKE) clean
+	@MAKE_MAGIC@ clean
 
 # redefine .c.o to get around gmake
 .c.o:
