@@ -214,6 +214,13 @@ main(int argc, char **argv)
 	}
     }
 
+#ifdef STD_PATH
+# ifdef HAVE_SETENV
+    setenv("PATH", STD_PATH, 1);
+# else
+    putenv("PATH=" STD_PATH);
+# endif
+#endif
 
 
 #ifdef NOFE

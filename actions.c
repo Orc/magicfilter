@@ -167,7 +167,7 @@ spool(char *bfr, int len, char **name)
  * execute_it() runs a program, replacing $FILE arguments with
  * the passed-in filename
  */
-static int
+static void
 execute_it(struct rule *r, char *file)
 {
     pid_t child;
