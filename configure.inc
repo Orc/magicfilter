@@ -732,7 +732,11 @@ AC_PROG_INSTALL () {
 	fi
     fi
 
-    PROG_INSTALL="$DEST${IS_BSD:+" -c"}"
+    if [ "$IS_BSD" ]; then
+	PROG_INSTALL="$DEST -c"
+    else
+	PROG_INSTALL="$DEST"
+    fi
 
     AC_SUB 'INSTALL' "$PROG_INSTALL"
     AC_SUB 'INSTALL_PROGRAM' "$PROG_INSTALL -s -m 755"
