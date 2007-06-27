@@ -8,6 +8,25 @@ dnl and either DPI or PS_OPTIONS are set, run ghostscript, else fall
 dnl over dead.
 dnl
 
+dnl undefine a whole bunch of tokens, just to be paranoid
+undefine(`Cat')dnl
+undefine(`Copy')dnl
+undefine(`Filter')dnl
+undefine(`PostScript')dnl
+undefine(`PSopts')dnl
+undefine(`PScmd')dnl
+undefine(`PSfilter')dnl
+undefine(`PDFfilter')dnl
+undefine(`PSfromText')dnl
+undefine(`pipe')dnl
+undefine(`fpipe')dnl
+undefine(`text')dnl
+undefine(`postscript')dnl
+undefine(`fig')dnl
+undefine(`dvi')dnl
+undefine(`fax')dnl
+undefine(`normal')dnl
+
 define(Cat,`ifdef(`PRINTER',`pipe/>forward/',cat)')dnl
 define(Filter,`ifdef(`PRINTER',`pipe/>forward/',filter)')dnl
 define(PostScript,`ifdef(`PRINTER',`pipe/>forward/',postscript)')dnl
@@ -32,41 +51,42 @@ define(PSfromText,
 	    `ifdef(`PATH_NENSCRIPT',
 		pipe/postscript/ PATH_NENSCRIPT ifdef(`papersize',`-T'papersize,) @NENSCRIPT_QUIET@ -p -,
 		    reject)')')dnl
+
 #
 # Portable imagemaps.
 #
-/p[gbp]m/	ifdef(`PATH_PNMTOPS',pipe/postscript/ PATH_PNMTOPS -quiet, reject)
+/`p[gbp]m'/	ifdef(`PATH_PNMTOPS',pipe/postscript/ PATH_PNMTOPS -quiet, reject)
 
 #
 # picture formats.
 #
-/gif/              ifdef(`PATH_GIFTOPPM',pipe/p[gbp]m/ PATH_GIFTOPPM,reject)
-/jpeg/             ifdef(`PATH_DJPEG',pipe/p[gbp]m/ PATH_DJPEG -pnm,reject)
-/PNG image/        ifdef(`PATH_PNGTOPNM',pipe/p[gbp]m/ PATH_PNGTOPNM,reject)
-/TIFF image/       ifdef(`PATH_TIFFTOPNM',pipe/p[gbp]m/ PATH_TIFFTOPNM,reject)
-/PC bitmap data/   ifdef(`PATH_BMPTOPPM',pipe/p[gbp]m/ PATH_BMPTOPPM,reject)
-/Sun raster image/ ifdef(`PATH_RASTTOPNM',pipe/p[gbp]m/ PATH_RASTTOPNM,reject)
-/SGI image data/   ifdef(`PATH_SGITOPNM',pipe/p[gbp]m/ PATH_SGITOPNM,reject)
+/`gif'/              ifdef(`PATH_GIFTOPPM',pipe/p[gbp]m/ PATH_GIFTOPPM,reject)
+/`jpeg'/             ifdef(`PATH_DJPEG',pipe/p[gbp]m/ PATH_DJPEG -pnm,reject)
+/`PNG image'/        ifdef(`PATH_PNGTOPNM',pipe/p[gbp]m/ PATH_PNGTOPNM,reject)
+/`TIFF image'/       ifdef(`PATH_TIFFTOPNM',pipe/p[gbp]m/ PATH_TIFFTOPNM,reject)
+/`PC bitmap data'/   ifdef(`PATH_BMPTOPPM',pipe/p[gbp]m/ PATH_BMPTOPPM,reject)
+/`Sun raster image'/ ifdef(`PATH_RASTTOPNM',pipe/p[gbp]m/ PATH_RASTTOPNM,reject)
+/`SGI image data'/   ifdef(`PATH_SGITOPNM',pipe/p[gbp]m/ PATH_SGITOPNM,reject)
 
 #
 # Miscellaneous formats.
 #
-/fig/		ifdef(`PATH_FIGTODEV',pipe/postscript/ PATH_FIGTODEV -Lps -P -l dummy,reject)
-/dvi/		ifdef(`PATH_DVIPS', fpipe/postscript/ PATH_DVIPS ifdef(`XDPI',-X XDPI -Y YDPI, -D DPI) -R -q -f,reject)
-/fax.*normal/	ifdef(`PATH_G3TOPBM',pipe/p[gbp]m/ PATH_G3TOPBM -stretch,reject)
-/fax/		ifdef(`PATH_G3TOPBM',pipe/p[gbp]m/ PATH_G3TOPBM,reject)
+/`fig'/		ifdef(`PATH_FIGTODEV',pipe/postscript/ PATH_FIGTODEV -Lps -P -l dummy,reject)
+/`dvi'/		ifdef(`PATH_DVIPS',fpipe/postscript/ PATH_DVIPS ifdef(`XDPI',-X XDPI -Y YDPI, -D DPI) -R -q -f,reject)
+/`fax.*normal'/	ifdef(`PATH_G3TOPBM',pipe/p[gbp]m/ PATH_G3TOPBM `-stretch',reject)
+/`fax'/		ifdef(`PATH_G3TOPBM',pipe/p[gbp]m/ PATH_G3TOPBM,reject)
 )dnl
 
 #
 # compressed formats.
 #
-/compress/	ifdef(`PATH_ZCAT', pipe PATH_ZCAT,
+/`compress'/	ifdef(`PATH_ZCAT', pipe PATH_ZCAT,
 		    `ifdef(`PATH_GZIP', pipe PATH_GZIP -dc, reject)')
-/gzip/		ifdef(`PATH_GZIP', pipe PATH_GZIP -dc, reject)
-/packed/	ifdef(`PATH_GZIP', pipe PATH_GZIP -dc, reject)
-/frozen/	ifdef(`PATH_GZIP', pipe PATH_GZIP -dc, reject)
-/lzh/		ifdef(`PATH_GZIP', pipe PATH_GZIP -dc, reject)
-/bzip/		ifdef(`PATH_BZIP', pipe PATH_BZIP -dc, reject)
+/`gzip'/		ifdef(`PATH_GZIP', pipe PATH_GZIP -dc, reject)
+/`packed'/	ifdef(`PATH_GZIP', pipe PATH_GZIP -dc, reject)
+/`frozen'/	ifdef(`PATH_GZIP', pipe PATH_GZIP -dc, reject)
+/`lzh'/		ifdef(`PATH_GZIP', pipe PATH_GZIP -dc, reject)
+/`bzip'/		ifdef(`PATH_BZIP', pipe PATH_BZIP -dc, reject)
 
 dnl
 dnl after everything else, put out the methods for printing postscript,
@@ -79,26 +99,25 @@ ifelse(defn(`PSfilter'),reject,
 define(`PCLprint',reject)dnl,
 define(`PCLprint',`ifdef(`PATH_UNPCL',pipe PATH_UNPCL @UNPCL_FLAGS@,reject)')dnl
 )dnl
-define(PCLfilter, `ifelse(PCL,true,Copy,PCLprint)')dnl
-define(PJLfilter, `ifelse(PJL,true,Copy,`ifelse(PCL,true,Copy,PCLprint)')')dnl
+define(`PCLfilter', `ifelse(PCL,true,Copy,PCLprint)')dnl
+define(`PJLfilter', `ifelse(PJL,true,Copy,`ifelse(PCL,true,Copy,PCLprint)')')dnl
 
-/postscript/	PSfilter
-/pdf/		PDFfilter
-/pcl/		PCLfilter
-/Printer Job Language/		PJLfilter
+/`postscript'/	PSfilter
+/`pdf'/		PDFfilter
+/`pcl'/		PCLfilter
+/`Printer Job Language'/		PJLfilter
 
 dnl
 dnl default print policy:  if HANDLE_TEXT is defined, use that to
-dnl print the file, otherwise if PRINTER is defined, use that to
-dnl print the file, otherwise if TEXT is not false, just cat it,
-dnl otherwise if a PS filter is defined, use pstext, else reject it
+dnl print the file, otherwise if TEXT is false, use PSfromText to
+dnl print the file, otherwise if PRINTER is defined, use it, otherwise
+dnl just cat it.
 dnl
 #
 # text, finally
 #
-/text/		ifdef(`HANDLE_TEXT',defn(`HANDLE_TEXT'),
-                    `ifdef(`PRINTER',defn(`Copy'),
+/`text'/		ifdef(`HANDLE_TEXT',defn(`HANDLE_TEXT'),
 			`ifelse(defn(`TEXT'),false,
 			    defn(`PSfromText'),
-			    text defn(`TEXT_ARGS'))')')
+			    `ifdef(`PRINTER', Copy,text defn(`TEXT_ARGS'))')')
 # EOF
