@@ -78,7 +78,14 @@ extern void showopts(FILE*, int, struct x_option*);
 #ifdef HAVE_UNSETENV
 #define UNSET(x)	unsetenv(x)
 #else
-#define	UNSET(x)	putenv(x ## "=")
+void
+UNSET(char *x)
+{
+    char *p = malloc(strlen(x) + 2);
+
+    sprintf(p, "%s=", x);
+    putenv(p);
+}
 #endif
 
 #ifdef HAVE_SETENV
