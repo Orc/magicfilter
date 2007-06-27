@@ -89,14 +89,15 @@ define(PJLfilter, `ifelse(PJL,true,Copy,`ifelse(PCL,true,Copy,PCLprint)')')dnl
 
 dnl
 dnl default print policy:  if HANDLE_TEXT is defined, use that to
-dnl print the file, otherwise if TEXT is not false, just cat it, otherwise
-dnl if a PS filter is defined, use pstext, else else reject it
+dnl print the file, otherwise if PRINTER is defined, use that to
+dnl print the file, otherwise if TEXT is not false, just cat it,
+dnl otherwise if a PS filter is defined, use pstext, else reject it
 dnl
 #
 # text, finally
 #
-/text/		ifdef(`PRINTER',defn(`Copy'),
-		    `ifdef(`HANDLE_TEXT',defn(`HANDLE_TEXT'),
+/text/		ifdef(`HANDLE_TEXT',defn(`HANDLE_TEXT'),
+                    `ifdef(`PRINTER',defn(`Copy'),
 			`ifelse(defn(`TEXT'),false,
 			    defn(`PSfromText'),
 			    text defn(`TEXT_ARGS'))')')
