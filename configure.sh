@@ -57,6 +57,10 @@ else
     if AC_LIBRARY magic_open -lmagic; then
 	LOG "Your system has a modern libmagic.  We'll use it."
 	unset BUILD_MAGIC
+    elif AC_LIBRARY magic_open -lmagic -lz; then
+	LOG "Your system has a modern libmagic.  We'll use it."
+	AC_LIBS="$AC_LIBS -lz"
+	unset BUILD_MAGIC
     fi
 
     if [ "$BUILD_MAGIC" ]; then
