@@ -4,7 +4,7 @@ MAN &PROGRAM& \- automatic configurable printer filter
 MAN .SH SYNOPSIS
 MAN .B &PROGRAM&
 LPR config-file [\-c] [\-n user] [\-h host] [other-options]
-LPNGconfig-file
+LPNGconfig-file [--version]
 MAN .SH DESCRIPTION
 MAN .B &PROGRAM&
 MAN is an extensible and customizable automatic printer filter.  It
@@ -113,6 +113,11 @@ LPR .TP
 LPR .I \-\-debug
 LPR Write debugging output to stdout.  Every \-\-debug increases the
 LPR quantity of debugging output.
+MAN .TP
+MAN .I \-\-version
+MAN Tell what version of
+MAN .B magicfilter
+MAN this is.
 TRAD.TP
 TRAD.I \-\-dump
 TRADWrite the default magicfilter configuration to stdout.  This can be

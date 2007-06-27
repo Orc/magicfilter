@@ -61,6 +61,7 @@ struct x_option opts[] = {
     { 'Z', 'Z', 0, "OPTIONS", "LPRng options passthrough ($ZOPT)" },
 #endif
     { 'd',  0 , "debug", 0, "spit out debugging and trace messages" },
+    { 'v',  0,  "version", 0, "print the version number, then exit" },
     { '!',  0 , "dump", 0, "Dump the default magicfilter.cf file, then exit" },
     { '@',  0 , "help", 0, "print this help message, then exit" },
 } ;
@@ -168,6 +169,8 @@ getoptionsandscript(int argc, char **argv)
 			for (i=0; m4template[i]; i++)
 			    write(1, m4template[i], strlen(m4template[i]));
 		    }
+		    exit(0);
+	case 'v':   fprintf(stderr, "%s\n", "Magicfilter @VERSION@");
 		    exit(0);
 	case '@':
 		    fprintf(stderr, "usage: %s printer-driver [options]\n", progname);

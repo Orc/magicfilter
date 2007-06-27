@@ -204,5 +204,5 @@ AC_CHECK_FUNCS setlinebuf
 AC_SUB MAGICFILTER ${AC_EXEC}/magicfilter
 AC_SUB VERSION `test -f VERSION && cat VERSION`
 
-AC_OUTPUT Makefile file/Makefile magicfilter.8templ magicfilter.5 magicfilter.h magicfilter-t.5 magic.m4 contrib/mfconfig.pl
+AC_OUTPUT Makefile file/Makefile magicfilter.8templ magicfilter.5 magicfilter.h magicfilter-t.5 magic.m4 contrib/mfconfig.pl args.c
 
