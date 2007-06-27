@@ -85,7 +85,7 @@ define(PJLfilter, `ifelse(PJL,true,Copy,`ifelse(PCL,true,Copy,PCLprint)')')dnl
 /postscript/	PSfilter
 /pdf/		PDFfilter
 /pcl/		PCLfilter
-/pjl/		PJLfilter
+/Printer Job Language/		PJLfilter
 
 dnl
 dnl default print policy:  if HANDLE_TEXT is defined, use that to
