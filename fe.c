@@ -63,6 +63,10 @@ fe(int input, int output)
 	    exit(1);
 	}
 
+#ifdef PAPERSIZE
+    sprintf(blk, "define(papersize,`%s')dnl\n", PAPERSIZE);
+    write(1,blk,strlen(blk));
+#endif
     if ( (fd = open(MAGICFILTER_CONF, O_RDONLY)) >= 0) {
 	while ((size = read(fd, blk, sizeof blk)) > 0)
 	    if (write(1, blk, size) != size) {

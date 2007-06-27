@@ -8,7 +8,8 @@
 ac_help='--path=PATH		look for conversion programs in PATH
 --filterdir=DIR		where to put printer filters (prefix/sbin/printers)
 --traditional		build a more traditional sort of magicfilter
---use-local-magic	install a private magic file'
+--use-local-magic	install a private magic file
+--with-papersize=SIZE	set the default paper size for gs/pstext'
 
 LOCAL_AC_OPTIONS='
 case X"$1" in
@@ -50,6 +51,7 @@ AC_INIT magicfilter
 AC_PROG_CC
 
 AC_SUB filterdir ${AC_FILTER:-$AC_PREFIX/sbin/printers}
+AC_SUB GSOUT '${FIFO}'
 
 if [ ! "$ac_local_magic" ]; then
     case $ac_os in
@@ -70,11 +72,11 @@ if [ ! "$ac_local_magic" ]; then
 	AC_PATH=$magicpath MF_PATH_INCLUDE MAGIC -r magic || ac_local_magic=T
 	AC_PATH=$save_AC_PATH
     else
-	echo "file(1) is too old -- using private magic file" | tee config.log
+	LOG "file(1) is too old -- using private magic file"
 	ac_local_magic=T
     fi
 else
-    echo "Using private magic file $AC_CONF/mf.magic" | tee config.log
+    LOG "Using private magic file $AC_CONF/mf.magic"
 fi
 rm -f $$
 trap 1 2 3 9 15
@@ -109,20 +111,54 @@ MF_PATH_INCLUDE RANLIB ranlib true || AC_CONFIG RANLIB ':'
 MF_PATH_INCLUDE M4 m4 || AC_FAIL "magicfilter requires m4"
 
 MF_PATH_INCLUDE GS gs
+if MF_PATH_INCLUDE NENSCRIPT nenscript enscript; then
+    TLOGN "checking if $CF_NENSCRIPT supports the -q flag..."
+    __v=`$CF_NENSCRIPT -q -p - </dev/null`
+
+    if [ \( "$?" -ne 0 \) -o "$__v" ]; then
+	TLOG " no"
+	AC_SUB NENSCRIPT_QUIET ''
+    else
+	TLOG " yes"
+	AC_SUB NENSCRIPT_QUIET -q
+    fi
+else
+    AC_SUB NENSCRIPT_QUIET ''
+    MF_PATH_INCLUDE PSTEXT pstext
+fi
+
+paper=$WITH_PAPERSIZE
+
+if [ "$CF_GS" -a "$paper" ]; then
+    if ! echo "quit" | $CF_GS -sPAPERSIZE=$paper -dNODISPLAY -; then
+	AC_FAIL "$CF_GS cannot write to $paper sized paper"
+	unset paper
+    fi
+fi
+
+if [ "${CF_PSTEXT:-$CF_NENSCRIPT}" -a "$paper" ]; then
+    PROG=${CF_PSTEXT:-$CF_NENSCRIPT}
+    if ! $PROG -T$paper </dev/null; then
+	AC_FAIL "$PROG cannot write to $paper sized paper"
+	unset paper
+    fi
+fi
+
+test "$paper" && AC_DEFINE PAPERSIZE \"$WITH_PAPERSIZE\"
+
 MF_PATH_INCLUDE GZIP gzip gzcat || MF_PATH_INCLUDE ZCAT zcat
 MF_PATH_INCLUDE BZIP bzip2
 MF_PATH_INCLUDE UNCOMPRESS uncompress
 MF_PATH_INCLUDE DVIPS dvips
 MF_PATH_INCLUDE PNMTOPS pnmtops
 MF_PATH_INCLUDE GIFTOPPM giftopnm giftoppm
+MF_PATH_INCLUDE G3TOPBM g3topbm
 MF_PATH_INCLUDE DJPEG djpeg
 MF_PATH_INCLUDE PNGTOPNM pngtopnm
 MF_PATH_INCLUDE SGITOPNM sgitopnm
 MF_PATH_INCLUDE TIFFTOPNM tifftopnm
 MF_PATH_INCLUDE BMPTOPPM bmptopnm bmptoppm
 MF_PATH_INCLUDE RASTTOPNM rasttopnm
-MF_PATH_INCLUDE PSTEXT pstext
-MF_PATH_INCLUDE NENSCRIPT nenscript enscript
 MF_PATH_INCLUDE FIG2DEV fig2dev
 MF_PATH_INCLUDE ACROREAD acroread
  
@@ -150,5 +186,5 @@ AC_CHECK_FUNCS setlinebuf
 
 AC_SUB MAGICFILTER ${AC_EXEC}/magicfilter
 
-AC_OUTPUT Makefile file/Makefile magicfilter.8templ magicfilter.5 magicfilter.h magicfilter-t.5
+AC_OUTPUT Makefile file/Makefile magicfilter.8templ magicfilter.5 magicfilter.h magicfilter-t.5 magic.m4
 

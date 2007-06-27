@@ -40,5 +40,5 @@ reject(char *fmt, ...)
     fflush(stderr);
 
     va_end(ptr);
-    exit(1);
+    exit(2);
 }

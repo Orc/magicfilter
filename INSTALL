@@ -42,6 +42,12 @@
 	configure.sh will configure magicfilter to use a local
 	magic file.
 
+    --with-papersize=size 
+
+	Magicfilter writes US Letter size pages by default, but
+	you can set the default to something else with this
+	option.
+
     --traditional
 
 	The normal magicfilter printer definition files are m4
@@ -66,7 +72,7 @@ whereas others, such as Solaris, do not.
 
 If in doubt, check for the existence of the file /etc/printcap.
 
-NOTE: The standard BSD print daemon does *not* support filters for
+NOTE: The traditional BSD print daemon does *not* support filters for
 remote printers, hence the instructions below apply only to systems
 which have the printers physically attached.  A version of lpd which
 does not have this problem is available as a part of the LPRng package

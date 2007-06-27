@@ -4,7 +4,7 @@ dnl just dump it to the printer, otherwise if a DEVICE is specified
 dnl and either DPI or PS_OPTIONS are set, run ghostscript, else fall
 dnl over dead.
 dnl
-define(PSopts,-q -dSAFER -dNOPAUSE ifdef(`papersize',`-sPAPERSIZE='papersize ,)ifdef(`DEVICE',`-sDEVICE='DEVICE ,)ifdef(`DPI', `-r'DPI ,)defn(PS_OPTIONS) -sOutputFile=${FIFO} - -c quit)dnl
+define(PSopts,-q -dSAFER -dNOPAUSE ifdef(`papersize',`-sPAPERSIZE='papersize ,)ifdef(`DEVICE',`-sDEVICE='DEVICE ,)ifdef(`DPI', `-r'DPI ,)defn(PS_OPTIONS) -sOutputFile=@GSOUT@ - -c quit)dnl
 define(PSfilter,ifelse(POSTSCRIPT,true,
 			    postscript,
 			    ifdef(`PATH_GS',
@@ -16,10 +16,10 @@ define(PJLfilter, ifelse(PJL,true,cat,ifelse(PCL,true,cat,reject)))dnl
 define(PSfromText, ifelse(defn(`PSfilter'), reject,
 			    reject,
 			    ifdef(`PATH_PSTEXT',
-				pipe/postscript/ PATH_PSTEXT,
-				    ifdef(`PATH_NENSCRIPT',
-					pipe/postscript/ PATH_NENSCRIPT -qp -,
-					reject))))dnl
+				pipe/postscript/ PATH_PSTEXT ifdef(`papersize',`-T'papersize,),
+				ifdef(`PATH_NENSCRIPT',
+				    pipe/postscript/ PATH_NENSCRIPT ifdef(`papersize',`-T'papersize,) @NENSCRIPT_QUIET@ -p -,
+				    reject))))dnl
 #
 `# magicfilter for 'ifdef(`Vendor',`the 'Vendor` ',)Printer
 #
