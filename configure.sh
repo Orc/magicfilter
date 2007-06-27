@@ -104,11 +104,13 @@ if [ "$BUILD_MAGIC" ]; then
     AC_SUB MAGIC_HEADER "-I$AC_SRCDIR/file"
     AC_SUB MAGIC_LIB    "-Lfile"
     AC_SUB MAKE_MAGIC	"cd file \&\& make"
+    AC_SUB CFMAGIC	"cfmagic"
 else
     AC_SUB LIBMAGIC ""
     AC_SUB MAGIC_HEADER ""
     AC_SUB MAGIC_LIB ""
     AC_SUB MAKE_MAGIC ":"
+    AC_SUB CFMAGIC	""
 fi
 
 AC_SUB DO_WHAT install-$TARGET

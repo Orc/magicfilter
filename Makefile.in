@@ -43,7 +43,7 @@ magic.c: magic.m4 mkmagic config.h
 cfmagic: file/magic
 	@MAKE_MAGIC@ magic
 
-commoninstall: textonly cfmagic
+commoninstall: textonly @CFMAGIC@
 	@INSTALL_DIR@ $(prefix)/@exedir@
 	@INSTALL_DIR@ $(prefix)/@mandir@/man8
 	@INSTALL_DIR@ $(prefix)/@mandir@/man5
