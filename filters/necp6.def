@@ -1,0 +1,5 @@
+#! @MAGICFILTER@
+define(Vendor,`NEC')dnl
+define(Printer, `P6, P6+ and P60 printers')dnl
+define(DPI,`360')dnl
+define(PS_OPTIONS,`@necp2x.upp')dnl

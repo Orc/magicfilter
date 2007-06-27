@@ -1,0 +1,5 @@
+#! @MAGICFILTER@
+define(Vendor,`IBM')dnl
+define(Printer, `JetPrinter 3852')dnl
+define(DPI,`84')dnl
+define(DEVICE,`jetp3852')dnl

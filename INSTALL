@@ -1,0 +1,121 @@
+			INSTALLING MAGICFILTER
+			----------------------
+
+
+* Run "configure.sh".  If you want to put the files in any other directory
+  tree than /usr/local (i.e. /usr/local/bin, /usr/local/man) then call
+  it with the option --prefix=<directory-prefix>, for example:
+
+	./configure.sh --prefix=/usr
+
+  Configure.sh works something like Autoconf's configure scripts, and
+  has the following options:
+
+    --src=DIR		where the source lives (.)
+    --prefix=DIR	where to install the final product (/usr/local)
+    --execdir=DIR	where to put executables (prefix/bin)
+    --mandir=DIR	where to put manpages (prefix/man)
+    --confdir=DIR	where to put configuration information (/etc)
+
+	If magicfilter uses a private magic file, it will be placed
+	here, and if you hand-make your own magic.m4 file, magicfilter
+	will look for it here as well.
+
+    --filterdir=DIR	where to put printer filters ($prefix/sbin/printers)
+    --path=PATH		look for conversion programs in PATH
+					(/sbin:/usr/sbin:/bin:/usr/bin:\
+					 /usr/local/bin:/usr/X11R6/bin)
+
+	If configure can't find a conversion program, it will build
+	magicfilter without support for that particular conversion.
+	The default path is set up to (hopefully) get all the normal
+	places for filters, but if you're on a bizarre system like
+	Solaris, you may need to customise it to include /opt/LLOCL/bin
+	and so on.
+
+    --use-local-magic	install a private magic file
+
+	Normally, magicfilter will attempt to use /etc/magic (or
+	whereever the magic for file(1) lives), but if that magic
+	file does not appear to be modern enough (experimentally
+	determined by seeing if it recognises a H-P pjl file),
+	configure.sh will configure magicfilter to use a local
+	magic file.
+
+    --traditional
+
+	The normal magicfilter printer definition files are m4
+	scripts that are merged with a standard ruleset.  If is is
+	not how you want magicfilter to work, --traditional builds
+	printer definition files that are already processed and
+	installs a version of magicfilter that understands this
+	format.   This is here for people who prefer to hack their
+	printer definitions;  if you don't, installing the normal
+	magicfilter makes all of your printers consistant.
+
+* Run "make".
+
+* Run "make install".
+
+-----------------------------------------------------------------------------
+
+The following instructions apply only to systems using the BSD
+printing system.  Linux and BSD-derived OSes all use the BSD printing
+system, some System V-based systems such as IRIX do as an option
+whereas others, such as Solaris, do not.
+
+If in doubt, check for the existence of the file /etc/printcap.
+
+NOTE: The standard BSD print daemon does *not* support filters for
+remote printers, hence the instructions below apply only to systems
+which have the printers physically attached.  A version of lpd which
+does not have this problem is available as a part of the LPRng package
+from ftp://dickory.sdsu.edu/pub/LPRng/.  To use filters with remote
+printers for LPRng, specify the "bqfilter" flag in /etc/printcap, for
+example:
+
+  # Remote HP LaserJet 4 (possibly connected via built-in Ethernet)
+  remoteprinter:\
+	:lp=:rm=printserver:rp=remoteprinter:\
+	:sd=/var/spool/lpd/remoteprinter:\
+	:bqfilter:mx#0:\
+	if=/usr/sbin/printers/ljet4:
+
+-----------------------------------------------------------------------------
+
+* Edit your /etc/printcap file to contain a call to the appropriate
+  printer filter in the "if" entry of each local printer.  This will
+  typically look something like this:
+
+  pencil|lp|PostScript|ljet4|HP LaserJet 4:\
+	:lp=/dev/lp1:sd=/var/spool/lpd/pencil:sh:mx#0:\
+	:if=/usr/sbin/printers/ljet4:
+
+  crayon|dj550c|color|HP DeskJet 550C:\
+	:lp=/dev/lp2:sd=/var/spool/lpd/crayon:sh:mx#0:\
+	:if=/usr/sbin/printers/dj550c:
+
+  Note the alias "lp" for the default (text) printer, and "PostScript"
+  for the preferred PostScript printer.
+
+  IMPORTANT: If you're on a really old version of UNIX which doesn't
+  support the so-called "#!-hack" for selecting an interpreter for
+  your filters, this form of installation does not work.  Instead, you
+  need to make your /etc/printcap file look something like this:
+
+  pencil|lp|PostScript|ljet4|HP LaserJet 4:\
+	:lp=/dev/lp1:sd=/var/spool/lpd/pencil:sh:mx#0:\
+	:if=/usr/local/bin/magicfilter:\
+	:af=/usr/sbin/printers/ljet4:
+
+  To test if your OS supports the #!-hack, type at the command line:
+
+	/usr/local/bin/XXXX < /dev/null
+
+  ... where XXXX-filter is any installed magic filter.  If you get an
+  error message, your OS does *not* support the #!-hack.
+
+  Linux, all BSD-derived OSes and System V R3 and later all support
+  the #!-hack.
+
+* Kill and restart lpd.  Your printer filter should now be working.

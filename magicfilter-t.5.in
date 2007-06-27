@@ -1,0 +1,213 @@
+.TH MAGICFILTER-T 5 "Version 2.0.0" "February 2000" \" -*- nroff -*-
+.SH NAME
+magicfilter-t \- format of compiled printer description files.
+
+.SH DESCRIPTION
+Compiled printer description files are simple templates showing what
+actions to perform given a specific file magic pattern.   They are
+used by
+.B magicfilter-t
+to redirect various types of data to the various conversion utilities.
+Each filter
+contains a sequence of lines of the form:
+.PP
+.I "/pattern/	action/hint/	arguments"
+.PP
+where the
+.I /pattern/
+is compared against what
+.B file (1)
+reports as the filetype,
+.I action
+is what should be done with it,
+.I /hint/
+(optionally) tells magicfilter what format the processed file
+is, and
+.I arguments
+are passed to the action.
+
+Blank lines and lines with a hash mark (#) as the first nonblank
+character are ignored.  A line may be continued onto the next line by
+ending the line in a backslash (\e).
+
+For ambiguous matches, the first match is used.  Hence, the most
+specific match should always be placed first in the file.  There is
+.B no
+default pattern -- if the file type is not matched,
+.B magicfilter
+will reject the print request.  If you wish a default pattern, you
+can use an empty pattern to do something like:
+.PP
+.NF
+//	pipe	@filterdir@/textonly
+.FI
+.PP
+To use Ed Lim's
+.B textonly
+program to print the file out after a little paranoia to make sure
+that it's not a binary.
+.SS FACILITIES
+.B magicfilter-t
+provides the following options for the
+.I facility
+field in the configuration file:
+.TP
+\fBcat\fR [\fIprefix\fR [\fIsuffix\fR]]
+Copy the input to the output without any conversion, like the
+.B cat
+command.  If the optional
+.I prefix
+and
+.I suffix
+strings are specified, they are transmitted to the printer immediately
+before and after the data itself.  The
+.I prefix
+and
+.I suffix
+strings can include escape sequences like \ee (escape)
+To
+specify a
+.I suffix
+without a
+.IR prefix ,
+specify an empty
+.I prefix
+string enclosed in double quotes (i.e. "").
+.TP
+\fBtext\fR [\fIprefix\fR [\fIsuffix\fR]] 
+Copy the input to the output, but add carriage return characters
+before every line feed and form feed character in the file, and a line
+feed-form feed sequence at end of file.
+The
+.I prefix
+and
+.I suffix
+arguments are treated the same way as for the
+.B cat
+facility; the
+.IR suffix ,
+if present, is added after the final line feed-form feed sequence.
+.TP
+\fBpostscript\fR
+Same as the
+.B text
+facility, except add an ASCII EOT (Ctrl-D) character to the end of the
+data.  This lets a PostScript printer know that the end of the job has
+been reached.  This is functionally equivalent to the command
+.TP
+.I " "
+\fBtext\fR "" \e004
+.TP
+\fBignore\fR
+Ignore the job; do not provide any output whatsoever.
+.TP
+\fBreject\fR \fImessage\fR
+Same as the
+.B ignore
+facility, but attempt to send an email message to the user who
+submitted the job to inform that a job has been rejected and why.
+.TP
+\fBfilter\fR \fIcommand\fR
+Run the given
+.IR command ,
+feeding it the input data, and sending the output data to the printer.
+The environment variables
+.BR LPUSER ,
+.BR LPHOST ,
+and
+.B LPINDENT
+is set to the values of the user, host and indent options passed to
+.BR magicfilter .
+Since the
+.I command
+is fed to
+.I /bin/sh
+it may contain shell special characters, and the sequences
+.BR $LPUSER ,
+.BR $LPHOST ,
+and
+.B $LPINDENT
+can be used to access the values of the passed environment variables.
+If the
+.B lpd
+daemon on the system is LPRng, the following environment variables are also
+available, see the
+.B OPTIONS
+section for details:
+.BR LPCLASS ,
+.BR LPFORMAT ,
+.BR LPJOB ,
+.BR LPCOPIES ,
+.BR BANNERNAME ,
+.BR PRINTER ,
+.BR LPQUEUE ,
+.BR LPACCT ,
+and
+.BR ZOPT .
+.TP
+\fBpipe\fR \fIcommand\fR
+Same as the
+.B filter
+facility, except that the output data is fed back into
+.B magicfilter-t
+for reprocessing.  This is used for external filter programs which
+themselves do not produce a format that the printer can accept, but
+which can be futher processed to obtain such a format.
+.TP
+\fBffilter\fR \fIcommand\fR
+.sp -0.5
+.TP
+\fBfpipe\fR \fIcommand\fR
+Same as the
+.B filter
+and
+.B pipe
+facilities, respectively, except that the input is written to a
+temporary file before being fed to the filter program given by
+.IR command .
+This is useful for programs which require seekable input, such as
+.BR dvips ,
+or which need to do multiple passes over an input file, such as
+.BR grog .
+The environment variable
+.B FILE
+is set to the name of the temporary file (and, like the other ones, it
+can be accessed on the command line as
+.BR $FILE ).
+.SH HINTS
+Using the
+.B pipe
+facility together with
+.B zcat
+or
+.B gunzip
+lets you transparently print compressed files.
+.PP
+The
+.B pbmplus
+or
+.B netpbm
+collections of image conversion utilities contain a large number of
+very useful external filter programs.
+.PP
+You will probably want to examine the sample configuration files
+included with the
+.B magicfilter
+distribution before creating your own.
+.SH BUGS
+Currently, there is no protection against the
+.B pipe
+or
+.B fpipe
+facilities going into an infinite loop.
+.SH AUTHOR
+H. Peter Anvin <hpa@zytor.com>, David Parsons <orc@pell.chi.il.us>
+.SH SEE ALSO
+.BR printcap (5),
+.BR magicfilter (5),
+.BR lpr (8),
+.BR dvips (1),
+.BR grog (1),
+.BR gs (1),
+.BR gzip (1),
+.BR troff (1).

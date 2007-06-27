@@ -1,0 +1,39 @@
+#! /bin/sh
+#
+# mkmpp: make the mpp shell script
+#
+
+if [ ! -r config.h ]; then
+    echo "$0: configure.sh must be run before mkmpp" 1>&2
+    exit 1
+fi
+
+exec 1>mpp
+
+cat - << \EOF
+#! /bin/sh
+#
+# mpp: magicfilter preprocessor, to build files for magicfilter-traditional
+#
+
+if [ $# -lt 2 ]; then
+    echo "usage: $0 path-to-traditional path-to-filter" 1>&2
+    exit 1
+fi
+
+if [ ! -r "$2" ]; then
+    echo "cannot open printer file [$2]" 1>&2
+    exit 1
+fi
+
+( m4 $2 - << \JEOF
+EOF
+if test -r config.h; then
+    grep PATH_ config.h | sed -e 's/^#define */define(/' \
+			      -e 's/ *"\([^"]*\)".*$/,\1)dnl/'
+fi
+cat magic.m4
+echo JEOF
+echo ') | sed -e s,@MAGICFILTER@,$1,'
+chmod +x mpp
+exit 0

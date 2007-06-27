@@ -1,0 +1,7 @@
+#! @MAGICFILTER@
+define(Vendor, `Hewlett-Packard')dnl
+define(Printer, `LaserJet III series')dnl
+define(DPI,`300')dnl
+define(DEVICE,`ljet3')dnl
+define(PCL,`true')dnl
+define(HANDLE_TEXT,`cat	\eE\e&k2G\e(0N	\eE')dnl

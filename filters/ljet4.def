@@ -1,0 +1,8 @@
+#! @MAGICFILTER@
+define(Vendor, `Hewlett-Packard')dnl
+define(Printer, `600DPI LaserJet 4 series without PostScript')dnl
+define(DPI,`600')dnl
+define(DEVICE,`ljet4')dnl
+define(PCL,`true')dnl
+define(PCL5E,`true')dnl
+define(HANDLE_TEXT,`cat	\eE\e&k2G\e(0N	\eE')dnl

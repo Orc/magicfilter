@@ -1,0 +1,7 @@
+#! @MAGICFILTER@
+define(Vendor, `Hewlett-Packard')dnl
+define(Printer, `LaserJet IID/IIP (with less than 1.5 Mb RAM)')dnl
+define(DPI,`150')dnl
+define(DEVICE,`ljet2p')dnl
+define(PCL,`true')dnl
+define(HANDLE_TEXT,`cat	\eE\e&k2G\e(0N	\eE')dnl

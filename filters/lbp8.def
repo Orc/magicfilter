@@ -1,0 +1,5 @@
+#! @MAGICFILTER@
+define(Vendor,`Canon')dnl
+define(Printer, `LBP-8II laser printer')dnl
+define(DPI,`300')dnl
+define(DEVICE,`lbp8')dnl

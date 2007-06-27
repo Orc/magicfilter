@@ -1,0 +1,7 @@
+#! @MAGICFILTER@
+define(Vendor, `Epson')dnl
+define(Printer, `9-pin (or compatable) printer')dnl
+define(XDPI,`120')dnl
+define(YDPI,`72')dnl
+define(DEVICE,`epson')dnl
+define(PS_OPTIONS,`-rXDPIxYDPI')dnl

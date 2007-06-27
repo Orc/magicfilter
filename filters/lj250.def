@@ -1,0 +1,5 @@
+#! @MAGICFILTER@
+define(Vendor,`DEC')dnl
+define(Printer, `LJ250')dnl
+define(DPI,`180')dnl
+define(DEVICE,`lj250')dnl

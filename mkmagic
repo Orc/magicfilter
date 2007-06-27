@@ -1,0 +1,25 @@
+#! /bin/sh
+
+if [ $# -ne 1 ]; then
+    echo "usage: mkmagic {magic.m4}" 1>&2
+    exit 1
+fi
+
+exec 1> magic.c
+
+cat - << EOF
+/*
+ * magic.c: embedded m4 script for magicfilter-2.
+ *
+ * generated on `date` from magic.m4
+ */
+EOF
+echo "char *m4template[] = {"
+if test -r config.h; then
+    grep PATH_ config.h | sed -e 's/^#define */define(/' \
+			      -e 's/ *"\([^"]*\)".*$/,\1)dnl/' \
+			      -e 's/^.*$/	"&\\n",/'
+fi
+cat $1 | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/^/	"/' -e 's/$/\\n",/'
+echo "	0 };"
+exit 0

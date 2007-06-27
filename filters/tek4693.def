@@ -1,0 +1,6 @@
+#! @MAGICFILTER@
+define(Vendor,`Tektronix')dnl
+define(Printer, `4693')dnl
+define(DPI,`100')dnl
+define(COLOR,`true')dnl
+define(DEVICE,`t4693d8')dnl

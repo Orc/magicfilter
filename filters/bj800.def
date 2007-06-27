@@ -1,0 +1,8 @@
+#! @MAGICFILTER@
+define(Vendor,`Canon')dnl
+define(Printer, `BubbleJet 800 (monochrome)')dnl
+define(DPI,`360')dnl
+define(DEVICE,`bjc800')dnl
+define(PS_OPTIONS,`-dMonochromePrint=true')dnl
+define(PCL,`true')dnl
+define(TEXT,`false')dnl

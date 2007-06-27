@@ -1,0 +1,5 @@
+#! @MAGICFILTER@
+define(Vendor,`Epson')dnl
+define(Printer, `LQ series printers')dnl
+define(DPI,`180')dnl
+define(DEVICE,`epson')dnl

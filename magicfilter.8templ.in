@@ -1,0 +1,200 @@
+changecom(\",
+)dnl
+.TH PROGRAM 8 "Version 2.0.0" "February 2000" \" -*- nroff -*-
+.SH NAME
+PROGRAM \- automatic configurable printer filter
+.SH SYNOPSIS
+.B PROGRAM
+ifdef(`HAVE_XGETOPT',
+config-file [\-c] [\-n user] [\-h host] [\-iindent] [\-\-debug] [other-options],
+config-file [\-c] [\-n user] [\-h host] [\-iindent] [other.options])
+.SH DESCRIPTION
+.B PROGRAM
+is an extensible and customizable automatic printer filter.  It
+selects an appropriate conversion technique for the input data by
+seeking for
+.IR "magic numbers" ,
+and then utilizing the appropriate conversion utility.
+.PP
+.B PROGRAM
+is primarily intended for use as the ``input filter'' by the
+.B lpd
+print spooler.  The options accepted by
+.B PROGRAM
+are exactly the ones passed to the input filter by
+.BR lpd .
+.SS OPTIONS
+Typically
+.B PROGRAM
+will be invoked by
+.B lpd
+and hence provided the right options automatically.  This list is
+included for reference only.
+.TP
+.I \-c
+Copy the input to the output without any conversion whatsoever (used
+by
+.B lpd
+whenever the
+.I \-l
+option is passed to the
+.B lpr
+program).
+.TP
+.I "\-nuser"
+The login name of the user who submitted the job.  Available to
+subfilters as
+.BR $LPUSER .
+If the user has an associated GECOS entry it will be available as
+.BR $LPUSERNAME .
+.TP
+.I "\-hhost"
+The host on which the job was submitted.  Available to subfilters as
+.BR $LPHOST .
+.TP
+.I "\-iindent"
+A numeric option passed by
+.BR lpd ;
+can be set by the user by the
+.I \-i
+option to
+.BR lpr.
+Although nominally used for the amount of indentation requested,
+.B PROGRAM
+makes it available to subfilters for any useful purpose as
+.BR $LPINDENT .
+.TP
+.I "\-Cclassname"
+LPRng class (priority) name.  Available to subfilters as
+.BR $LPCLASS .
+.TP
+.I "\-Fformat"
+Format letter (passed by LPRng only).  When used as input filter (if)
+this will be
+.IR f ,
+when used as other filter types it will be the option character
+corresponding to this filter.  Available to subfilters as
+.BR $LPFORMAT .  
+.TP
+.I "\-Jjobname"
+The name of the printer job (passed by LPRng only).  Available to
+subfilters as
+.BR $LPJOB .
+.TP
+.I "\-Kcopies"
+Copy count (passed by LPRng only).  Available to subfilters as
+.BR $LPCOPIES .
+.TP
+.I "\-Lbannername"
+User name from the banner page (passed by LPRng only).  Available to
+subfilters as
+.BR $BANNERNAME .
+.TP
+.I "\-Pprinter"
+Printer name (passed by LPRng only).  Available to subfilters as
+.BR $PRINTER .
+.TP
+.I "\-Qqueuename"
+Spool queue name (passed by LPRng only).  Available to subfilters as
+.BR $LPQUEUE .
+.TP
+.I "\-Raccountinfo"
+Accounting information (passed by LPRng only).  Available to
+subfilters as 
+.BR $LPACCT .
+.TP
+.I "\-Zoptions"
+LPRng ``Z-options''.  The LPRng
+.B lpr
+program supports a
+.I \-Z
+option, which can be used to pass arbitrary information to the printer
+filters.  Available to subfilters as
+.BR $ZOPT .
+ifdef(`HAVE_XGETOPT',
+.TP
+.I \-\-debug
+Write debugging output to stdout.  Every \-\-debug increases the
+quantity of debugging output.
+ifelse(PROGRAM,`magicfilter-t',,
+.TP
+.I \-\-dump
+Write the default magicfilter configuration to stdout.  This can be
+customised and put in @confdir@/magicfilter.cf if you wish to modify
+which filetypes magicfilter knows about.)
+.TP
+.I \-\-help
+Prints out a synopsis of the command-line switches supported.,)
+.TP
+.I "other options"
+Any other options, such as the
+.IR \-w ,
+.IR \-l ,
+.IR \-x ,
+and
+.I \-y 
+options typically passed by
+.B lpd
+are ignored.
+.SS USING LPD
+To run
+.B PROGRAM
+from
+.B lpd
+it should be entered as one of the filters in the
+.I /etc/printcap
+file.  Typically, it will be the input filter (if).  Since most
+version of
+.B lpd
+do not accept arguments entered as part of the filter name, typically
+the filter name entered into the
+.I /etc/printcap
+file will simply be the name of the configuration file, which is set
+executable and starts with the line:
+.PP
+.B #! @exedir@/PROGRAM
+.PP
+Most UNIX kernels will then be able to treat the configuration file
+itself as if it was the actual program.
+.PP
+For systems which do not support the ``#!-hack'', the filter set in
+the if entry should point to
+.B PROGRAM
+directly, and the accounting file (af) entry should point to the
+configuration file.  This, however, is a less general, and hence less
+desirable solution.
+.PP
+This version of
+.B PROGRAM
+supports the enhanced 
+.B lpd
+included with the LPRng package from
+.IR dickory.sdsu.edu .
+.SH BUGS
+.B Magicfilter
+has been extensively modified for the 2.0 release, and has very little
+in common with the old 1.2 magicfilter.  The
+.I config-file
+format has changed pretty drastically, and old config files will
+.B not
+work anymore.
+.PP
+Currently, there is no protection against the
+.B pipe
+or
+.B fpipe
+facilities going into an infinite loop.
+.PP
+.SH AUTHOR
+H. Peter Anvin <hpa@zytor.com>, David Parsons <orc@pell.chi.il.us>
+.SH SEE ALSO
+.BR printcap (5),
+.BR PROGRAM (5),
+ifelse(PROGRAM,magicfilter-t,.BR magicfilter (5)`,'
+,)dnl
+.BR lpr (8),
+.BR dvips (1),
+.BR grog (1),
+.BR gs (1),
+.BR gzip (1),
+.BR troff (1).

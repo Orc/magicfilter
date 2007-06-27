@@ -1,0 +1,7 @@
+#! @MAGICFILTER@
+define(Vendor,`Canon')dnl
+define(Printer, `BubbleJet 600 (draft mode)')dnl
+define(DPI,`360')dnl
+define(DEVICE,`bjc600')dnl
+define(PS_OPTIONS,`-sPrintQuality=Draft')dnl
+define(PCL,`true')dnl

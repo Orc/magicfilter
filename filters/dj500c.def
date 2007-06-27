@@ -1,0 +1,7 @@
+#! @MAGICFILTER@
+define(Vendor, `Hewlett-Packard')dnl
+define(Printer, `DeskJet 500 series color printers with only CMY cartridge installed')dnl
+define(DPI,`300')dnl
+define(COLOR,`true')dnl
+define(PCL,`true')dnl
+define(HANDLE_TEXT,`cat	\eE\e&k2G\e(0N	\eE')dnl

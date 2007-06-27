@@ -1,0 +1,5 @@
+#! @MAGICFILTER@
+define(Vendor,`Okidata')dnl
+define(Printer, `182')dnl
+define(DPI,`144')dnl
+define(DEVICE,`oki182')dnl

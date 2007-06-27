@@ -1,0 +1,5 @@
+#! @MAGICFILTER@
+define(Vendor,`Epson')dnl
+define(Printer, `Stylus series printers')dnl
+define(DPI,`360')dnl
+define(DEVICE,`st800')dnl

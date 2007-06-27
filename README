@@ -1,0 +1,55 @@
+This is magicfilter 2.0.
+
+It's somewhat different from magicfilter 1.2:
+
+    * the printer definition file format has changed;  it is now a simple
+      m4 macro file that passes define()'s in to magicfilter.
+    * the code uses libfile to do pattern matching instead of hand-identifying
+      file types.
+    * system() is no longer used to execute filters and pipes; they are now
+      directly execvp'ed to cut down on the number of processes
+      magicfilter launches.  This means that environment variables
+      are no longer substituted, except for the special case of single
+      arguments named $FILE, which, if they are arguments to fpipe and
+      ffilters, will be replaced with the name of the scratchfile created
+      for the pipe.  If this is a major problem, pester me and I'll think
+      about putting system() back in.
+    * all new processes are children of magicfilter, instead of some being
+      punted off into their own little groups.
+    * reject doesn't do mail notifications yet.
+      
+
+Building magicfilter
+
+    magicfilter 2.0 doesn't use gnu autoconf any more, because gnu autoconf
+    requires gnu m4 and I don't have that on Mastodon.  Instead, I've written
+    my own little replacement called configure.sh, which works somewhat the
+    same as the gnu configure script:
+
+    I configure magicfilter via:
+
+    CC="cc -baout -m386" CFLAGS="-O2" ./configure.sh --prefix=/usr
+
+    ./configure.sh --help gives a listing of the options it currently
+    accepts; most are similar to the gnu autoconf ones, except --path,
+    which gives configure a path so it will look for programs in places
+    other than the default /bin:/usr/bin:/usr/local/bin path. 
+
+
+Copyrights
+
+    libfile is made from the file(1) program, and carries the same
+    BSD-style copyright.
+
+    magicfilter itself ended up being completely rewritten, and now
+    carries a BSD-style copyright.
+
+    The manual pages were written by hpa, and thus carry the same
+    copyright -- the GNU GPL -- as magicfilter 1.2 does.
+
+    The filters were written by hpa, et alii, then trimmed fairly
+    drastically for magicfilter 2.  They are public domain.
+
+
+
+-david parsons (orc@pell.chi.il.us)

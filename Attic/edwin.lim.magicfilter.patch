@@ -1,0 +1,274 @@
+From elim@research.att.com  Tue Oct  5 15:21:28 1999
+Received: from mail-blue.research.att.com (mail-blue.research.att.com [135.207.30.102])
+	by pell.portland.or.us (8.8.5/8.8.5) with ESMTP id PAA25675
+	for <orc@pell.portland.or.us>; Tue, 5 Oct 1999 15:21:27 -0700
+Received: from alliance.research.att.com (alliance.research.att.com [135.207.26.26])
+	by mail-blue.research.att.com (Postfix) with ESMTP id 142264CE0F
+	for <orc@pell.portland.or.us>; Tue,  5 Oct 1999 18:20:37 -0400 (EDT)
+Received: from elim-sgi.research.att.com (elim-sgi.research.att.com [135.207.20.85])
+	by alliance.research.att.com (8.8.7/8.8.7) with ESMTP id SAA21301
+	for <orc@pell.portland.or.us>; Tue, 5 Oct 1999 18:20:36 -0400 (EDT)
+From: Edwin Lim <elim@research.att.com>
+Received: (from elim@localhost)
+	by elim-sgi.research.att.com (980427.SGI.8.8.8/8.8.5) id SAA70628
+	for <orc@pell.portland.or.us>; Tue, 5 Oct 1999 18:20:35 -0400 (EDT)
+Date: Tue, 5 Oct 1999 18:20:35 -0400 (EDT)
+Message-Id: <199910052220.SAA70628@elim-sgi.research.att.com>
+To: "David Parsons" <orc@pell.portland.or.us>
+Subject: Re: Magicfilter
+X-Status: 
+X-Keywords:
+X-UID: 837
+Status: O
+
+>    I have a spiffy little ndialog setup box that, alas, doesn't work all
+>    the time -- I've been working on making it easier to plug ndialog
+>    into a system without having to do much compiling, and the bulk of
+>    that is scribbling around the peripherals of magicfilter (and cursing
+>    a blue streak about some of the more charming misfeatures in lpd.)
+
+I just have a couple of stuffs that I ran up against when I tried to
+use magicfilter.  I am not sure if the current code has addressed these
+points but here they are anyway:
+
+
+1) The "optimistic troff magic" was invoked accidentally on some non-troff
+   input.  E.g., the output of a "find . -print" is normally
+
+	.
+	./foo
+	./foo/bar
+
+   The leading '.' triggers the the troff (in)magic :-).  My solution is
+   to comment that line out, although I think using file(1) might be a
+   good idea (that will mean a complete rewrite of the code...).
+
+
+2) The final "Default entry" comes too soon...  I mean there are some
+   really nasty binaries data that will fail all preceeding checks.
+   For example, if I "tail /bin/ls", the filter will assume that it
+   is printable ascii and tries to send it to the printer.
+
+   For this, I wrote a simple program (/print/bin/textonly) that will
+   scan stdin and passthrough printable data and do some hex dump of
+   non-printable data.  I put it right at the end of the filter like:
+
+# Default entry -- for normal (text) files.  MUST BE LAST.
+default                 pipe            /print/bin/textonly |  /usr/common/bin/enscript  -B -p-
+
+
+I have included the code below, feel free to ignore it or do whatever 
+you want to it.
+
+
+Cheers,
+e.
+--
+Help Desk Person Edwin Lim <elim@research.att.com> 973-360-7058 fp c254
+                        Your fault -- core dumped
+Some snack -- http://www.ftech.net/~honeyg/progstone/index.html
+Devolution -- http://www.improbable.com/ig/ig-top.html
+
+
+
+
+/***********************************************************************
+* textonly.c
+*
+* Simple program that makes sure that stdin is printable stuff.
+* If not, output simple hex dump, otherwise copy to stdout.
+* Meant to be a final sanity check pipe printer filter.
+* 
+* Ed Lim  Fri Sep 24 00:56:56 EDT 1999
+*
+***********************************************************************/
+
+
+#include <stdio.h>
+#include <unistd.h>
+
+
+/***********************************************************************
+* Prototypes
+***********************************************************************/
+int scan_input(unsigned char *, int);
+void hex_dump(unsigned char *, int, int);
+void shove_out(unsigned char *, int);
+
+
+/* will check this many bytes each iteration to determine printability: */
+#define CHUNK_SIZE 512
+
+/* can't be sent to printer */
+char nonprint[256] = {
+ 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+};
+
+/* non-visible , for the hexdump part */
+char nonscreen[256] = {
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+};
+
+
+/***********************************************************************
+* MAIN
+***********************************************************************/
+int main() {
+
+    int insize = 0;
+    unsigned char inbuf[CHUNK_SIZE];
+    int total_read = 0;
+
+    for ( ; ; ) {
+        insize = read(0, inbuf, CHUNK_SIZE);
+        if ( insize <= 0 )  {
+            break;
+        } else if ( scan_input(inbuf, insize) ) {
+            hex_dump(inbuf, insize, total_read);
+            break;
+        } else {
+            shove_out(inbuf, insize);
+        }
+        total_read += insize;
+
+    }
+
+    return 0;
+
+}
+
+
+/***********************************************************************
+* scan_input
+*
+* Scan input buffer for illegal characters.
+*
+* Returns:
+* Number of illegal characters found.
+*
+************************************************************************/
+int scan_input(unsigned char *inbuf, int insize) {
+
+    int bad_chars = 0;
+    int i;
+
+
+    for ( i = 0 ; i < insize ; i++ ) {
+        bad_chars += nonprint[inbuf[i]];
+    }
+
+    return bad_chars;
+
+}
+
+
+/***********************************************************************
+* hex_dump
+*
+* This will do some sort of hex dump.
+*
+***********************************************************************/
+void hex_dump(unsigned char *stuff_to_dump, int size, int fake_offset) {
+
+    int line_loc, i, this_line_size;
+    int dumped = 0;
+    int temp;
+
+
+    /* some header stuff */
+    printf ("\n%s\n%s\n\n",
+            "Non-printable characters encountered.  Printing aborted.",
+            "Offending characters are prepended by '!'.");
+
+
+    while ( dumped < size ) {
+
+        /* offset number */
+        line_loc = printf("%010x:", fake_offset + dumped);
+
+        /* how many characters for this line? */
+        this_line_size = (size - dumped) < 16 ? (size - dumped) : 16;
+
+        /* hex part */
+        for (i = 0 ; i < this_line_size ; i++) {
+            line_loc += printf("%c%02x", 
+                    nonprint[stuff_to_dump[dumped + i]] ?  '!' : ' ', 
+                    stuff_to_dump[dumped + i]);
+        }
+
+        /* ascii part */
+        for (i = line_loc ; i < 62 ; i++) printf(" ");
+        for (i = 0 ; i < this_line_size ; i++) {
+            printf("%c", nonscreen[stuff_to_dump[dumped + i]] ? 
+                    '.' : stuff_to_dump[dumped + i]);
+        }
+
+        printf("\n");
+
+        dumped += this_line_size;
+
+    }
+
+    return;
+
+}
+
+
+/***********************************************************************
+* shove_out
+*
+* Output stuff.
+*
+***********************************************************************/
+void shove_out(unsigned char *stuff_to_shove, int size) {
+
+    int this_shovel, shoved = 0;
+    unsigned char *ptr = stuff_to_shove;
+
+    while ( shoved < size ) {
+        this_shovel = write(1, ptr, (size - shoved));
+        if ( this_shovel < 0 ) exit(-1);
+        shoved += this_shovel;
+        ptr += this_shovel;
+    }
+
+    return;
+
+}
+
+
+/*
+* vim: tabstop=4 shiftwidth=4 autoindent expandtab smartindent nohlsearch
+*/
+
+

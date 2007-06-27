@@ -1,0 +1,7 @@
+#! @MAGICFILTER@
+define(Vendor,`DEC')dnl
+define(Printer, `LA-75')dnl
+define(XDPI,`144')dnl
+define(YDPI,`72')dnl
+define(POSTSCRIPT,true)dnl
+define(PS_OPTIONS,``-r'XDPI`x'YDPI')dnl

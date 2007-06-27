@@ -1,0 +1,5 @@
+#! @MAGICFILTER@
+define(Vendor,`Ricoh')dnl
+define(Printer, `4081 laser printer')dnl
+define(DPI,`300')dnl
+define(DEVICE,`r4081')dnl

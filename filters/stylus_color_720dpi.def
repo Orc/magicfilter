@@ -1,0 +1,6 @@
+#! @MAGICFILTER@
+define(Vendor,`Epson')dnl
+define(Printer, `ESC/P2 (i.e. Stylus Color) series color printers in 720 dpi')dnl
+define(DPI,`720')dnl
+define(COLOR,`true')dnl
+define(PS_OPTIONS,`@stc800p.upp -dMicroweave')dnl

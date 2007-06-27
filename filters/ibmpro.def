@@ -1,0 +1,7 @@
+#! @MAGICFILTER@
+define(Vendor,`IBM')dnl
+define(Printer, `ProPrinter')dnl
+define(XDPI,`120')dnl
+define(YDPI,`72')dnl
+define(DEVICE,`ibmpro')dnl
+define(PS_OPTIONS,`-rXDPIxYDPI')dnl

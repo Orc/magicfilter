@@ -1,0 +1,86 @@
+# makefile for magicfilter-2
+
+OBJS=getline.o xyzzy.o actions.o magic.o trace.o reject.o args.o getaline.o
+LIB     = libmf.a
+CC      = @CC@
+LDFLAGS = -Lfile -L. @LDFLAGS@
+CFLAGS  = -I. -Ifile @CFLAGS@
+LIBES   = -lmf -lfile @LIBS@
+RANLIB  = @RANLIB@
+PROGS=traditional magicfilter mpp textonly
+FILE	= file/libfile.a
+
+all: $(PROGS)
+
+$(FILE):
+	cd file && $(MAKE) all
+
+textonly: textonly.c
+	$(CC) $(CFLAGS) -o textonly textonly.c
+
+mpp: magic.m4 mkmpp
+	./mkmpp magic.m4
+
+traditional: $(LIB) fe.c $(FILE)
+	$(CC) $(LDFLAGS) -DNOFE -o traditional fe.c $(LIBES)
+
+magicfilter: $(LIB) fe.c $(FILE)
+	$(CC) $(LDFLAGS) -o magicfilter fe.c $(LIBES)
+
+$(OBJS): rule.h magicfilter.h
+
+$(LIB): $(OBJS) @XGETOPT@
+	$(AR) cr $(LIB) $(OBJS) @XGETOPT@
+	$(RANLIB) $(LIB)
+
+ignore @XGETOPT@: basis/options.h basis/options.c
+	$(CC) $(CFLAGS) -c -o @XGETOPT@ basis/options.c
+
+magic.c: magic.m4 mkmagic config.h
+	./mkmagic magic.m4
+
+commoninstall: textonly
+	@INSTALL@ -d $(prefix)/@exedir@
+	@INSTALL@ -d $(prefix)/@mandir@/man8
+	@INSTALL@ -d $(prefix)/@mandir@/man5
+	@INSTALL@ -d $(prefix)/@filterdir@
+	@INSTALL_MAGIC@@INSTALL_DATA@ -m 444 file/magic $(prefix)/@MAGIC@
+	@INSTALL_PROGRAM@ -m 511 textonly $(prefix)/@filterdir@
+
+install:  @DO_WHAT@
+
+install-traditional: traditional commoninstall
+	@M4@ -DPROGRAM=magicfilter-t -DHAVE_XGETOPT=1 < magicfilter.8 > /tmp/$$$$; \
+	    @INSTALL_DATA@ -m 444 /tmp/$$$$ $(prefix)/@mandir@/man8/magicfilter-t.8; \
+	    rm -f /tmp/$$$$
+	@INSTALL_DATA@ -m 444 magicfilter-t.5 $(prefix)/@mandir@/man5
+	@INSTALL_PROGRAM@ -m 511 traditional $(prefix)/@exedir@/magicfilter-t
+	./mkmpp
+	for x in filters/*.def;do \
+	    ./mpp @exedir@/magicfilter-t $$x > $(prefix)/@filterdir@/`basename $$x .def`-filter; \
+	    chmod +x $(prefix)/@filterdir@/`basename $$x .def`-filter; \
+	done
+	@rm -f mpp
+
+install-magicfilter: magicfilter commoninstall
+	@M4@ -DPROGRAM=magicfilter -DHAVE_XGETOPT=1 < magicfilter.8templ > /tmp/$$$$; \
+	    @INSTALL_DATA@ -m 444 /tmp/$$$$ $(prefix)/@mandir@/man8/magicfilter.8; \
+	    rm -f /tmp/$$$$
+	@INSTALL_DATA@ -m 444 magicfilter.5 $(prefix)/@mandir@/man5
+	@INSTALL_PROGRAM@ -m 511 magicfilter $(prefix)/@exedir@
+	for x in filters/*.def;do \
+	    sed -e 's,@MAGIC''FILTER@,@exedir@/magicfilter,' < $$x > $(prefix)/@filterdir@/`basename $$x .def`; \
+	    chmod +x $(prefix)/@filterdir@/`basename $$x .def`; \
+	done
+
+export: VERSION
+	V=`cat VERSION`; \
+	if bk export -tplain -r+ /tmp/magicfilter-$$V; then \
+	    cd /tmp; \
+	    tar czf magicfilter-$$V.tar.gz magicfilter-$$V; \
+	    rm -rf magicfilter-$$V; \
+	fi
+
+clean:
+	rm -f $(OBJS) magic.c $(PROGS) $(LIB) @XGETOPT@
+	cd file && $(MAKE) clean

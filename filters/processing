@@ -1,0 +1,48 @@
+what=process(0,0)
+
+    what ~= /postscript/:i
+	    if %POSTSCRIPT% = true
+		cat
+	    else build and execute gs command
+
+		if gs exists, build command and execute, returning error
+		    status if it fails.
+		else
+		    reject
+
+	 ~= /pdf/:i
+	    build and execute gs command (see above)
+
+	 ~= /pcl/:i
+	    if %PCL% = true
+		cat
+	    else
+		reject
+
+	 ~= /gif|jpg|bmp|<image formats>/:i
+	    build and execute format->target command
+
+	 ~= {forbidden objects}
+	    reject
+
+	 ~= text
+	    if %HANDLE_TEXT%,
+		%HANDLE_TEXT%
+	    else if %TEXT% = true
+		cat
+	    else if %POSTSCRIPT% = true
+		enscript
+	    elif %default%
+		%default%
+	    else
+		reject
+
+	 default
+	    if %PERMISSIVE% = true
+		if %default%
+		    %default%
+		else
+		    reject
+	    else
+		reject
+

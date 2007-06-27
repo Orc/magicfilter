@@ -1,0 +1,5 @@
+#! @MAGICFILTER@
+define(Vendor,`DEC')dnl
+define(Printer, `LN-03')dnl
+define(DPI,`300')dnl
+define(POSTSCRIPT,true)dnl

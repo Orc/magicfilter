@@ -1,0 +1,6 @@
+#! @MAGICFILTER@
+define(Vendor, `Canon')dnl
+define(Printer, `BubbleJet 200')dnl
+define(DPI,`360')dnl
+define(DEVICE,`bj200')dnl
+define(PCL,`true')dnl

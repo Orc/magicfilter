@@ -1,0 +1,7 @@
+#! @MAGICFILTER@
+define(Vendor,`C.Itoh')dnl
+define(Printer, `M8510')dnl
+define(XDPI,`160')dnl
+define(YDPI,`144')dnl
+define(DEVICE,`epson')dnl
+define(PS_OPTIONS,`-rXDPIxYDPI')dnl

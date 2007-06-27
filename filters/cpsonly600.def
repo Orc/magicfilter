@@ -1,0 +1,6 @@
+#! @MAGICFILTER@
+define(Printer, `PostScript-only printer (600 dpi)')dnl
+define(DPI,`600')dnl
+define(COLOR,`true')dnl
+define(POSTSCRIPT,`true')dnl
+define(TEXT,`false')dnl

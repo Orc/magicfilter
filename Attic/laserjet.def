@@ -1,0 +1,6 @@
+#! magicfilter
+define(PrinterInfo, `HP LaserJet (with 1.5 Mb or more RAM)')dnl
+define(DPI,`300')dnl
+define(DEVICE,`laserjet')dnl
+define(PCL,`true')dnl
+define(HANDLE_TEXT,`cat	\eE\e&k2G\e(0N	\eE')dnl
