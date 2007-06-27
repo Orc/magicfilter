@@ -1,4 +1,4 @@
-#   @(#) configure.inc 1.27@(#)
+#   @(#) configure.inc 1.28@(#)
 #   Copyright (c) 1999 David Parsons. All rights reserved.
 #   
 #   Redistribution and use in source and binary forms, with or without
