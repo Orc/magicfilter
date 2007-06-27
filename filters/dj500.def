@@ -4,5 +4,4 @@ define(Printer, `DeskJet 500 series B/W printers (and DJ500c with black cartridg
 define(DPI,`300')dnl
 define(DEVICE,`djet500')dnl
 define(PCL,`true')dnl
-define(DEVICE,`cdjmono')dnl
 define(HANDLE_TEXT,`cat	\eE\e&k2G\e(0N	\eE')dnl
