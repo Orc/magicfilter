@@ -1,4 +1,4 @@
-#   @(#) configure.inc 1.24@(#)
+#   @(#) configure.inc 1.25@(#)
 #   Copyright (c) 1999 David Parsons. All rights reserved.
 #   
 #   Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,7 @@ ac_progname=$0
 ac_configure_command="$*"
 
 __d=`__ac_dirname "$ac_progname"`
-if "$__d" = "$ac_progname"; then
+if [ "$__d" = "$ac_progname" ]; then
     AC_SRCDIR=`pwd`
 else
     AC_SRCDIR=`cd $__d;pwd`
