@@ -84,7 +84,7 @@ trap 1 2 3 9 15
 if [ "$ac_local_magic" ]; then
     # if we're using local magic, manually write the substitution
     # information into the config files
-    AC_DEFINE PATH_MAGIC \""$AC_CONFDIR"/mf.magic\"
+    AC_CONFIG MAGIC "$AC_CONFDIR"/mf.magic
     AC_SUB INSTALL_MAGIC ""
 else
     AC_SUB INSTALL_MAGIC ": "
