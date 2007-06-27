@@ -38,6 +38,7 @@
 
 #include <basis/options.h>
 
+#ifndef WITH_LPRNG
 struct x_option opts[] = {
     { 'c', 'c', 0, 0, "Copy the input to the output without processing" },
     { 'h', 'h', 0, "HOST", "The machine that submitted the job" },
@@ -47,6 +48,7 @@ struct x_option opts[] = {
     { 'w', 'w', 0, "WIDTH", "lpd width argument (ignored)" },
     { 'x', 'x', 0, "WIDTH", "lpd width in pixels (ignored)" },
     { 'y', 'y', 0, "LENGTH", "lpd length in pixels (ignored)" },
+#ifdef WITH_LPRNG
     { 'C', 'C', 0, "CLASS", "LPRng classname ($LPCLASS)" },
     { 'F', 'F', 0, "FORMAT", "LPRng format letter ($LPFORMAT)" },
     { 'J', 'J', 0, "JOB", "LPRng jobname ($LPJOB)" },
@@ -57,6 +59,7 @@ struct x_option opts[] = {
     { 'R', 'R', 0, "INFO",  "LPRng accounting information ($LPACCT)" },
     { 'X', 'X', 0, "OPTIONS", "LPRng options passthrough ($XOPT)" },
     { 'Z', 'Z', 0, "OPTIONS", "LPRng options passthrough ($ZOPT)" },
+#endif
     { 'd',  0 , "debug", 0, "spit out debugging and trace messages" },
     { '!',  0 , "dump", 0, "Dump the default magicfilter.cf file, then exit" },
     { '@',  0 , "help", 0, "print this help message, then exit" },
@@ -69,6 +72,7 @@ extern void showopts(FILE*, int, struct x_option*);
 #define OPTIND			x_optind
 #define	OPTARG			x_optarg
 #define IGNORE			x_opterr = 0
+#endif
 
 #ifdef HAVE_UNSETENV
 #define UNSET(x)	unsetenv(x)
@@ -106,6 +110,7 @@ getoptionsandscript(int argc, char **argv)
 	++argv, --argc;
     }
 
+#ifdef WITH_LPRNG
     /* unset all the LPRng environment variables
      */
     UNSET("LPUSER");
@@ -120,7 +125,9 @@ getoptionsandscript(int argc, char **argv)
     UNSET("LPQUEUE");
     UNSET("LPACCT");
     UNSET("ZOPT");
+#endif
 
+#ifndef WITH_LPRNG
     IGNORE;
     while ( (opt = GETOPT(argc, argv)) != EOF) {
 	switch (opt) {
@@ -134,6 +141,7 @@ getoptionsandscript(int argc, char **argv)
 		    break;
 	case 'i':   SET("LPINDENT", OPTARG);
 		    break;
+#ifdef WITH_LPRNG
 	case 'C':   SET("LPCLASS", OPTARG);
 		    break;
 	case 'F':   SET("LPFORMAT", OPTARG);
@@ -154,7 +162,7 @@ getoptionsandscript(int argc, char **argv)
 		    break;
 	case 'Z':   SET("ZOPT", OPTARG);
 		    break;
-
+#endif
 	case '!':   {   int i;
 
 			for (i=0; m4template[i]; i++)
@@ -175,6 +183,7 @@ getoptionsandscript(int argc, char **argv)
 	    fprintf(stderr, "%s: no printer driver specified\n", progname);
 	    exit(1);
 	}
+#endif
 
 #ifdef HAVE_BASENAME
     progname = basename(script);

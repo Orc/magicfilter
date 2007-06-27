@@ -1,4 +1,4 @@
-.TH MAGICFILTER 5 "Version 2.0.0" "February 2000" \" -*- nroff -*-
+.TH MAGICFILTER 5 "Version @VERSION@" "%E%" \" -*- nroff -*-
 .SH NAME
 magicfilter \- format of printer description files.
 
@@ -46,8 +46,8 @@ This is set to true if the printer supports PCL5E.
 .TP
 define(DEVICE,`device')dnl
 This is the device name to use when filtering through GhostScript.
-You need to have this for every printer, because even PostScript capable
-printers need to run ghostscript to handle PDF files.
+This (or PS_OPTIONS, if you're using some sort of gs script) is
+needed to print most formats on non-postscript printers.
 .TP
 define(TEXT,`false')dnl
 Set this to false if your printer cannot handle text, but must have it

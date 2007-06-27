@@ -9,6 +9,7 @@ ac_help='--filterdir=DIR		where to put printer filters (prefix/sbin/printers)
 --traditional		build a more traditional sort of magicfilter
 --use-local-magic	install a private magic file
 --use-fifo		pipe the output from gs through a fifo
+--with-lprng		build a stupid filter for use with lprng
 --with-papersize=SIZE	set the default paper size for gs/pstext'
 
 LOCAL_AC_OPTIONS='
@@ -32,12 +33,12 @@ esac'
 # load in the configuration file
 #
 TARGET=magicfilter
+USE_FIFO=T		# default to piping ghostscript via a fifo
 . ./configure.inc
 
 
 # and away we go
 #
-USE_FIFO=T		# default to piping ghostscript via a fifo
 AC_INIT magicfilter
 
 AC_PROG_CC
@@ -91,15 +92,33 @@ AC_SUB DO_WHAT install-$TARGET
 # AC_PROG_LN_S
 # AC_PROG_YACC
 
+if [ ! "$WITH_LPRNG" ]; then
+    S=`lpq -V 2>/dev/null | head -1 | grep -i lprng`
 
-if AC_CHECK_HEADERS basis/options.h; then
-    if LIBS="-lbasis" AC_CHECK_FUNCS x_getopt; then
-	AC_LIBS="$AC_LIBS -lbasis"
-	AC_SUB XGETOPT
-	HAVE_XGETOPT=T
+    if [ "$S" ]; then
+	LOG "Found LPRng -- building stupid filters"
+	WITH_LPRNG=1
     fi
 fi
-test "$HAVE_XGETOPT" || AC_SUB XGETOPT options.o
+if [ "$WITH_LPRNG" ]; then
+    AC_SUB    "LPD_OPTS" "'s/^LPNG//p'"
+    AC_DEFINE "WITH_LPRNG" "1"
+else
+    AC_SUB    "LPD_OPTS" "'s/^LPR //p'"
+
+    # don't bother to check for options.h unless we're not
+    # being built against lprng -- remember that magicfilter
+    # for lprng doesn't have any options.
+    #
+    if AC_CHECK_HEADERS basis/options.h; then
+	if LIBS="-lbasis" AC_CHECK_FUNCS x_getopt; then
+	    AC_LIBS="$AC_LIBS -lbasis"
+	    AC_SUB XGETOPT
+	    HAVE_XGETOPT=T
+	fi
+    fi
+    test "$HAVE_XGETOPT" || AC_SUB XGETOPT options.o
+fi
 
 AC_CHECK_HEADERS malloc.h || AC_CHECK_HEADERS sys/malloc.h
 
@@ -183,6 +202,7 @@ AC_CHECK_FUNCS setenv
 AC_CHECK_FUNCS setlinebuf
 
 AC_SUB MAGICFILTER ${AC_EXEC}/magicfilter
+AC_SUB VERSION `test -f VERSION && cat VERSION`
 
-AC_OUTPUT Makefile file/Makefile magicfilter.8templ magicfilter.5 magicfilter.h magicfilter-t.5 magic.m4
+AC_OUTPUT Makefile file/Makefile magicfilter.8templ magicfilter.5 magicfilter.h magicfilter-t.5 magic.m4 contrib/mfconfig.pl
 

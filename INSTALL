@@ -65,6 +65,17 @@
 	printer definitions;  if you don't, installing the normal
 	magicfilter makes all of your printers consistant.
 
+    --with-lprng
+
+	Magicfilter usually allows you to specify a bunch of options
+	on the command line.  Unfortunately, LPRng emits many many
+	different options that seem to vary from release to release
+	of the package;  configure.sh attempts to detect LPRng and
+	generate a magicfilter that doesn't take options, but if
+	that autodetection fails then you can manually give this
+	option.   Do this if you're running LPRng and magicfilter
+	fails on you.
+
 * Run "make".
 
 * Run "make install".
@@ -77,21 +88,6 @@ system, some System V-based systems such as IRIX do as an option
 whereas others, such as Solaris, do not.
 
 If in doubt, check for the existence of the file /etc/printcap.
-
-NOTE: The traditional BSD print daemon does *not* support filters for
-remote printers, hence the instructions below apply only to systems
-which have the printers physically attached.  A version of lpd which
-does not have this problem is available as a part of the LPRng package
-from ftp://dickory.sdsu.edu/pub/LPRng/.  To use filters with remote
-printers for LPRng, specify the "bqfilter" flag in /etc/printcap, for
-example:
-
-  # Remote HP LaserJet 4 (possibly connected via built-in Ethernet)
-  remoteprinter:\
-	:lp=:rm=printserver:rp=remoteprinter:\
-	:sd=/var/spool/lpd/remoteprinter:\
-	:bqfilter:mx#0:\
-	if=/usr/sbin/printers/ljet4:
 
 -----------------------------------------------------------------------------
 

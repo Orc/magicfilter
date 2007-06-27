@@ -50,7 +50,11 @@ ifelse(defn(`PSfilter'),reject,,
 /fax/		ifdef(`PATH_G3TOPBM',pipe/p[gbp]m/ PATH_G3TOPBM,reject)
 )dnl
 
-/pdf/		ifdef(`PATH_ACROREAD',pipe/postscript/ PATH_ACROREAD -toPostScript,ifdef(`PATH_GS',filter PATH_GS ifdef(`DEVICE',,`-sDEVICE=psgray') PSopts,reject))
+/pdf/		ifdef(`PATH_ACROREAD',pipe/postscript/ PATH_ACROREAD -toPostScript,
+		    ifdef(`PATH_GS',
+			ifdef(`DEVICE', ffilter PATH_GS PSopts $FILE,
+			    ifdef(`PS_OPTIONS', ffilter PATH_GS PSopts $FILE,
+				    reject)),reject))
 
 #
 # compressed formats.

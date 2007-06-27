@@ -1,0 +1,299 @@
+#!/usr/bin/perl -w
+
+use strict; 
+no strict "vars";
+
+my $printcap="/etc/printcap";
+my $filterdir="@filterdir@";
+my $force=0;
+my $m;
+
+$m=0;
+
+if ($#ARGV >= 0) { 
+  $force=($ARGV[0] eq "--force"); if ($force) { $m++; }
+}
+
+if ($m <= $#ARGV) { $printcap=$ARGV[$m]; }
+
+sub input
+{
+  my($message)=$_[0];
+  my($defanswer)=$_[1];
+  my($reply);
+
+  printf "%-45s [%-15s]: ",$message,$defanswer; 
+  $reply=<STDIN>; chop($reply); if ($reply eq "") { $reply=$defanswer; }
+ 
+  return $reply;
+}
+
+sub yninput
+{
+  my($message)=$_[0];
+  my($defanswer)=$_[1];
+  my($reply);
+
+  printf "%s? (y/n) [%s]: ",$message,$defanswer; 
+  $reply=<STDIN>; chop($reply); if ($reply eq "") { $reply=$defanswer; }
+ 
+  return $reply;
+}
+
+sub readfilters
+{
+  my($i);
+
+  if ( ! -e $filterdir )
+  {
+  print<<EOT;
+
+The magicfilter package is wrongly installed; can't find $filterdir.
+
+EOT
+
+    die "'$filterdir' missing, stopped";
+  }
+  
+  open(FILTERS, "ls $filterdir|sort|") || die "Can't find $filters.";
+  $i=0;
+  while (<FILTERS>)
+  {
+    chop;
+    s/$filterdir\/(.*)-filter/$1/g;
+    $filters[$i]=$_; $i++;
+  }
+  close(FILTERS);
+
+  foreach $entry (@filters) { $entry =~ s/-filter//g; }
+  return sort(@filters);
+}
+
+if ( -e $printcap && !$force) 
+{
+  print<<EOT;
+
+You already have an $printcap file installed.
+I assume that it is already correctly configured and won't overwrite it.
+(if $printcap is not correctly configured, delete the file and re-run 
+ $0 or run '$0 --force').
+
+EOT
+  exit 0;
+} 
+
+@filters=&readfilters;
+
+$ok="no"; $m=-1; $d=0;
+while ($ok !~ /y(es)?/)
+{
+  print<<EOT;
+  
+You will have to supply the following items for each printer to be installed
+(example values in parentheses):
+
+ - its short name and its full name            (hpjlet4, HP LaserJet 4)
+ - the device where the printer is attached    (/dev/lp1)
+ - and the input filter you want to use        (ljet4l)
+
+EOT
+
+  $p=-1;
+  do
+  {
+    $p++; $m++; $full[$m+1]='done';
+
+    if ($p == 0) { $full[$p]='HP Laserjet 4L'; } 
+    else         { $full[$p]='done'; }
+
+    $short[$p]='hplj4l';
+    $dev[$p]=sprintf("/dev/lp%d",$p+1); $ifilter[$p]='ljet4l';
+    $remflags[$p]=""; $serflags[$p]="";
+
+    printf "Printer #%d:\n", $p+1;
+    printf "------------\n";
+
+       $full[$p]=&input("Full name, `done' when done", $full[$p]);
+ 
+    if ($full[$p] !~ /done\s*/)
+    { 
+      $short[$p]=&input("Short name, name of the spool directory",$short[$p]);
+      $dev[$p]  =&input("Full device path (or remote machine name)",
+			$dev[$p]);
+
+      if ($#filters == 0)
+      {
+        print "There aren't any filters."; $full[$p]='done';
+      }
+      else
+      {
+	print<<EOT;
+
+The following filters are available in $filterdir.  You can read
+the comments at the top of each file to help decide which filter would
+best suit your needs.
+
+EOT
+	$l=0;
+	foreach $filter (@filters)
+	{
+	  $l += (length($filter)+1);
+	  if ($l > 72-length($filter)) { print "\n"; $l=0; }
+	  print "$filter ";
+	}
+        print "\n\n";
+
+        $ifilter[$p]=&input("The input filter to be used", $ifilter[$p]);
+
+        if ($dev[$p] !~ /\/dev\//) { 
+	  $remflags[$p]=":rm=$dev[$p]:rp=$short[$p]:lpr_bounce";
+	  $dev[$p]="/dev/null";
+	} elsif ($dev[$p] =~ /\/dev\/ttyS/) { 
+	  $serflags[$p]=":bf=2400:fc=0:fs=1";
+	}
+
+        $spooldir[$p]="/var/spool/lpd/$short[$p]";
+
+        print "\n";
+      }
+    }
+  }
+  while ($full[$p] !~ /done\s*/);
+
+  if ($p > 0)
+  {
+    if ($p == 1) { $d=0; }
+    do
+    {
+      format top=
+
+                       Printer configuration
+
+Default printer (alias `lp') is marked with an asterisk.
+
+Printer name  Short name Spool dir            Device     Input filter
+-------------------------------------------------------------------------------
+.
+
+    format STDOUT=
+@<<<<<<<<<<<< @<<<<<<<<< @<<<<<<<<<<<<<<<<<<< @<<<<<<<<< @<<<<<<<<<<<<<<<<<<@<<
+$full,        $short,    $spooldir,           $dev,      $ifilter,          $a
+.
+
+      for($i=0;$i<$p;$i++)
+      {
+        $full=$full[$i]; $short=$short[$i];
+        $spooldir=$spooldir[$i]; $dev=$dev[$i]; $ifilter=$ifilter[$i];
+	$a= ($remflags[$i] ne "") ? "R" : "";
+        $a= $a . (($i == $d) ? "*" : "");
+
+        write;
+      }
+      $ans="n"; $-=0;
+
+      print "\n";
+      if ($p > 1)
+      {
+        $ans=&yninput("Do you want to change the default printer","n");
+        if ($ans =~ /y(es)?/)
+        {
+          $def=&input("New default printer (type its short name)","");
+          $d=0;
+          while (($d < $p) && ($short[$d] !~ /$def/)) { $d++; }
+          if ($d == $p) { $d = 0; }
+	  $short[$d]=$def;
+        }
+      }
+    }
+    while ($ans =~ /y(es)?/);
+    $ok=&yninput("Is this ok","y");
+  }
+  else
+  {
+    $ok="yes";
+  } 
+}
+
+print "\n";
+if ($p > 0)
+{
+  if ( -x "/usr/bin/paperconf" )
+  {
+    open(PAPERSIZE, "/usr/bin/paperconf -N|");
+    $papersize=<PAPERSIZE>; chop($papersize);
+    close(PAPERSIZE);
+  }
+
+  $pagelength=66;
+  if ($papersize =~ /A4/) { $pagelength=72; }
+  print "Paper size is $papersize, page length is $pagelength lines.\n";
+
+  # Stop running daemons:
+  if ($> == 0) {
+    if ( -x "/etc/init.d/lpd" )   { system("/etc/init.d/lpd stop");  }
+    if ( -x "/etc/init.d/lprng" ) { system("/etc/init.d/lprng stop"); }
+  }
+
+  open(PRINTCAP,">$printcap") || die "Can't write $printcap: $!";
+  print PRINTCAP <<EOH;
+#
+# LPD printer configuration.
+#
+# This file was generated by $0.
+#
+EOH
+
+  $short[$d]="lp|" . $short[$d];
+  for($i=0;$i<$p;$i++)
+  {
+    print PRINTCAP <<"EOE";
+$short[$i]|$full[$i]:\\
+\t:lp=$dev[$i]:sd=$spooldir[$i]$remflags[$i]$serflags[$i]:\\
+\t:sh:pw#80:pl#${pagelength}:px#1440:mx#0:\\
+\t:if=$filterdir/$ifilter[$i]:\\
+\t:af=/var/log/lp-acct:lf=/var/log/lp-errs:
+EOE
+  }
+  close(PRINTCAP);
+
+  for($i=0;$i<$p;$i++)
+  {
+    $lpgrp=(getpwnam("lp"))[2];
+    if ( ! -e $spooldir[$i] )
+    {
+        umask 002; mkdir($spooldir[$i],02775); chown(0,$lpgrp,$spooldir[$i]);
+    }
+  }
+
+  print<<EOT;
+$printcap generated.
+
+You'll probably want to finetune your newly created $printcap file.
+Read the printcap(5), lpr(1), lpq(1), lprm(1) and lpc(1) manual pages
+and the PRINTING-HOWTO before doing this.
+
+EOT
+
+  if ($> == 0) {
+    if ( -x "/etc/init.d/lpd"   ) { system("/etc/init.d/lpd start"); }
+    if ( -x "/etc/init.d/lprng" ) { system("/etc/init.d/lprng start"); }
+  }
+}
+else
+{
+  print<<EOT;
+
+Nothing to install.
+You're going to write your $printcap file yourself.
+
+EOT
+}
+
+my $display=$ENV{"DISPLAY"} || "";
+
+if ( $display ne "" ) {
+  $dummy="";
+  print "Press <ENTER> to continue."; $dummy=<STDIN>;
+}
+
+exit 0;

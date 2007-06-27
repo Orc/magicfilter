@@ -96,6 +96,7 @@ m4(int input, int output)
     dup2(input, 0);
     dup2(output, 1);
 
+    execl(PATH_M4, "m4", 0);
     execlp("m4", "m4", 0);
     perror("m4::execlp");
     exit(1);

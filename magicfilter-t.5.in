@@ -1,4 +1,4 @@
-.TH MAGICFILTER-T 5 "Version 2.0.0" "February 2000" \" -*- nroff -*-
+.TH MAGICFILTER-T 5 "Version @VERSION@" "%E%" \" -*- nroff -*-
 .SH NAME
 magicfilter-t \- format of compiled printer description files.
 

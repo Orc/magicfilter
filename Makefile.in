@@ -15,8 +15,8 @@ all: $(PROGS)
 $(FILE):
 	cd file && $(MAKE) all
 
-textonly: textonly.c
-	$(CC) $(CFLAGS) -o textonly textonly.c
+textonly: contrib/textonly.c
+	$(CC) $(CFLAGS) -o textonly contrib/textonly.c
 
 mpp: magic.m4 mkmpp
 	./mkmpp magic.m4
@@ -39,7 +39,10 @@ ignore @XGETOPT@: basis/options.h basis/options.c
 magic.c: magic.m4 mkmagic config.h
 	./mkmagic magic.m4
 
-commoninstall: textonly
+magicfile: file/magic
+	cd file && make magic
+
+commoninstall: textonly magicfile
 	@INSTALL@ -d $(prefix)/@exedir@
 	@INSTALL@ -d $(prefix)/@mandir@/man8
 	@INSTALL@ -d $(prefix)/@mandir@/man5
@@ -49,11 +52,7 @@ commoninstall: textonly
 
 install:  @DO_WHAT@
 
-install-traditional: traditional commoninstall
-	@M4@ -DPROGRAM=magicfilter-t -DHAVE_XGETOPT=1 < magicfilter.8 > /tmp/$$$$; \
-	    @INSTALL_DATA@ -m 444 /tmp/$$$$ $(prefix)/@mandir@/man8/magicfilter-t.8; \
-	    rm -f /tmp/$$$$
-	@INSTALL_DATA@ -m 444 magicfilter-t.5 $(prefix)/@mandir@/man5
+install-traditional: traditional commoninstall install-manpages-t
 	@INSTALL_PROGRAM@ -m 511 traditional $(prefix)/@exedir@/magicfilter-t
 	./mkmpp
 	for x in filters/*.def;do \
@@ -62,11 +61,19 @@ install-traditional: traditional commoninstall
 	done
 	@rm -f mpp
 
-install-magicfilter: magicfilter commoninstall
-	@M4@ -DPROGRAM=magicfilter -DHAVE_XGETOPT=1 < magicfilter.8templ > /tmp/$$$$; \
-	    @INSTALL_DATA@ -m 444 /tmp/$$$$ $(prefix)/@mandir@/man8/magicfilter.8; \
-	    rm -f /tmp/$$$$
+install-manpages: VERSION
+	@SED@ -n -e 's/&PROGRAM&/magicfilter/g' -e 's/^MAN //p' -e @LPD_OPTS@ < magicfilter.8templ > $$$$; \
+	@INSTALL_DATA@ -m 444 $$$$ $(prefix)/@mandir@/man8/magicfilter.8; \
+	rm -f $$$$
 	@INSTALL_DATA@ -m 444 magicfilter.5 $(prefix)/@mandir@/man5
+
+install-manpages-t: VERSION
+	@SED@ -n -e 's/&PROGRAM&/magicfilter-t/g' -e 's/^MAN //p' -e 's/^TRAD//p' -e @LPD_OPTS@ < magicfilter.8templ > $$$$; \
+	@INSTALL_DATA@ -m 444 $$$$ $(prefix)/@mandir@/man8/magicfilter-t.8; \
+	rm -f $$$$
+	@INSTALL_DATA@ -m 444 magicfilter-t.5 $(prefix)/@mandir@/man5
+
+install-magicfilter: magicfilter commoninstall install-manpages
 	@INSTALL_PROGRAM@ -m 511 magicfilter $(prefix)/@exedir@
 	for x in filters/*.def;do \
 	    sed -e 's,@MAGIC''FILTER@,@exedir@/magicfilter,' < $$x > $(prefix)/@filterdir@/`basename $$x .def`; \

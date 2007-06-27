@@ -4,4 +4,5 @@ define(Printer, `DeskJet 500 series color printers with only CMY cartridge insta
 define(DPI,`300')dnl
 define(COLOR,`true')dnl
 define(PCL,`true')dnl
+define(DEVICE,`cdjcolor')dnl
 define(HANDLE_TEXT,`cat	\eE\e&k2G\e(0N	\eE')dnl

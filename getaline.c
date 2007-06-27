@@ -29,11 +29,16 @@
 #include <stdio.h>
 #include <malloc.h>
 
+#include "magicfilter.h"
+
 int
 getaline(FILE *input, char **bfr, int *buflen, int *lineno)
 {
     int idx;
     int c;
+
+    if (*buflen > 0)
+	memset(*bfr, 0, *buflen);
 
     for (idx = 0; (c = getc(input)) != EOF; idx++) {
 	if (idx == (*buflen) ) {
@@ -56,6 +61,8 @@ getaline(FILE *input, char **bfr, int *buflen, int *lineno)
 
     if (c == EOF)	/* die if we ran out of file in the middle of a line */
 	return EOF;
+    if (debug > 4)
+	fprintf(stderr, "[%s]\n", *bfr);
     (*bfr)[idx] = 0;
     return idx;
 } /* getaline */
