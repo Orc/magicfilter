@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <errno.h>
 #ifndef	major			/* if `major' not defined in types.h, */
 #include <sys/sysmacros.h>	/* try this one. */
 #endif

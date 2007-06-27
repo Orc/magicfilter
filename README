@@ -1,11 +1,13 @@
-This is magicfilter 2.0.
+This is magicfilter 2.3
 
 It's somewhat different from magicfilter 1.2:
 
     * the printer definition file format has changed;  it is now a simple
       m4 macro file that passes define()'s in to magicfilter.
-    * the code uses libfile to do pattern matching instead of hand-identifying
-      file types.
+    * the code uses libmagic (either the one in recent versions of
+      file(1) or a homemade clone of it in the copy of file that's
+      included in the sources) to do pattern matching instead of
+      hand-identifying file types.
     * system() is no longer used to execute filters and pipes; they are now
       directly execvp'ed to cut down on the number of processes
       magicfilter launches.  This means that environment variables
@@ -21,7 +23,7 @@ It's somewhat different from magicfilter 1.2:
 
 Building magicfilter
 
-    magicfilter 2.0 doesn't use gnu autoconf any more, because gnu autoconf
+    magicfilter 2.3 doesn't use gnu autoconf any more, because gnu autoconf
     requires gnu m4 and I don't have that on Mastodon.  Instead, I've written
     my own little replacement called configure.sh, which works somewhat the
     same as the gnu configure script:

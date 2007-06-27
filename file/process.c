@@ -37,6 +37,7 @@ static char *moduleid =
 #include <fcntl.h>	/* for open() */
 #include <utime.h>
 #include <unistd.h>	/* for read() */
+#include <errno.h>
 
 #include "file.private.h"
 #include "form.h"
