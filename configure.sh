@@ -15,7 +15,7 @@ ac_help='--filterdir=DIR		where to put printer filters (prefix/sbin/printers)
 LOCAL_AC_OPTIONS='
 case X"$1" in
 X--filterdir=*)
-	    AC_FILTER=`echo "$1" | sed -e 's/^[^=]*=//'`
+	    AC_FILTER=`echo "$1" | sed -e "s/^[^=]*=//"`
 	    shift 1
 	    ;;
 X--filterdir)
