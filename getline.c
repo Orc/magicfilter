@@ -34,7 +34,12 @@
  *	/pattern/	action[/hint/]	[arg {arg ...}]
  */
 
+#include <stdlib.h>
+#ifdef HAVE_MALLOC_H
 #include <malloc.h>
+#elif HAVE_SYS_MALLOC_H
+#include <sys/malloc.h>
+#endif
 #include <string.h>
 #include <ctype.h>
 #include "rule.h"
@@ -324,7 +329,7 @@ again:
 
 	for (x = 0; x < r->argc; x++) {
 	    fprintf(stderr, "        arg %d is `", x);
-	    vis(stderr, r->argv[x]);
+	    vis(stderr, (unsigned char*)(r->argv[x]));
 	    fprintf(stderr, "'\n");
 	}
     }

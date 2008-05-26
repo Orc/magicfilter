@@ -33,6 +33,7 @@
 #include "magicfilter.h"
 #include <magic.h>
 #include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 char *filetype = 0;

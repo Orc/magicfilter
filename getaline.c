@@ -27,7 +27,13 @@
  *  THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#if HAVE_MALLOC_H
 #include <malloc.h>
+#elif HAVE_SYS_MALLOC_H
+#include <sys/malloc.h>
+#endif
 
 #include "magicfilter.h"
 

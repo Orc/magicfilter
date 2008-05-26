@@ -51,7 +51,7 @@ static char *getstr	__P((char *, char *, int, int *));
 static int parse	__P((char *, int *, int));
 
 static char *magicfile = MAGIC;
-static int lineno = 0;
+static int ap_lineno = 0;
 
 static int maxmagic = 0;
 
@@ -77,7 +77,7 @@ magwarn(va_alist)
 #endif
 	if (progname != NULL) 
 		(void) fprintf(stderr, "%s: %s, %d: ", 
-			       progname, magicfile, lineno);
+			       progname, magicfile, ap_lineno);
 	(void) vfprintf(stderr, f, va);
 	va_end(va);
 	fputc('\n', stderr);
@@ -126,7 +126,7 @@ int check;			/* non-zero? checking-only run. */
 	    printf("static struct magic __m[] = {\n");
 	}
 
-	for (lineno = 1;fgets(line, BUFSIZ, f) != NULL; lineno++) {
+	for (ap_lineno = 1;fgets(line, BUFSIZ, f) != NULL; ap_lineno++) {
 		if (line[0]=='#')	/* comment, do not parse */
 			continue;
 		if (strlen(line) <= (unsigned)1) /* null line, garbage, etc */

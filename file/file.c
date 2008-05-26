@@ -29,11 +29,18 @@ static char *moduleid =
 	"@(#)$Id$";
 #endif	/* lint */
 
+#include "../config.h"
+
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <sys/param.h>	/* for MAXPATHLEN */
+#if HAVE_MALLOC_H
 #include <malloc.h>
+#elif HAVE_MALLOC_H
+#include <sys/malloc.h>
+#endif
 
 extern int getopt();
 extern int optind;
