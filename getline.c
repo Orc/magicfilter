@@ -27,7 +27,7 @@
  *  THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * getline() picks up a magicfilter rule line and passes it back to magicfilter
+ * getrule() picks up a magicfilter rule line and passes it back to magicfilter
  *
  * rules are:
  *
@@ -177,10 +177,10 @@ vis(FILE *output, unsigned char *s)
 
 
 /*
- * getline() gets a rule off the input stream
+ * getrule() gets a rule off the input stream
  */
 struct rule *
-getline(FILE *input)
+getrule(FILE *input)
 {
     static char *bfr = 0;	/* a buffer for reading lines into */
     static int buflen = 0;	/* size of that buffer */
@@ -194,13 +194,13 @@ getline(FILE *input)
 	/* initialize the line buffer the first time in
 	 */
 	if ( (bfr = malloc(buflen=80)) == 0) {
-	    perror("getline::malloc");
+	    perror("getrule::malloc");
 	    exit(1);
 	}
     }
 
     if ( (r = calloc(1, sizeof *r)) == 0) {
-	perror("getline::calloc");
+	perror("getrule::calloc");
 	exit(1);
     }
 
@@ -245,7 +245,7 @@ again:
     }
 
     if ( (r->pattern = strdup(q)) == 0) {
-	perror("getline::strdup");
+	perror("getrule::strdup");
 	exit(1);
     }
 
@@ -294,7 +294,7 @@ again:
 
     if (hint)
 	if ( (r->hint = strdup(hint)) == 0) {
-	    perror("getline::strdup");
+	    perror("getrule::strdup");
 	    exit(1);
 	}
 
@@ -307,11 +307,11 @@ again:
     while ( (q = getarg(&p)) != 0) {
 	r->argv = realloc(r->argv, (3 + r->argc) * sizeof r->argv[0]);
 	if (r->argv == 0) {
-	    perror("getline::realloc");
+	    perror("getrule::realloc");
 	    exit(1);
 	}
 	if ( (r->argv[r->argc++] = strdup(q)) == 0) {
-	    perror("getline::strdup");
+	    perror("getrule::strdup");
 	    exit(1);
 	}
     }
@@ -335,4 +335,4 @@ again:
     }
     ++ruleno;
     return r;
-} /* getline */
+} /* getrule */

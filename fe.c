@@ -128,7 +128,7 @@ be(int input, int output)
 
     /* read rules
      */
-    while ( (r = getline(f)) != 0) {
+    while ( (r = getrule(f)) != 0) {
 	rulecount++;
 	if (tail) {
 	    tail->next = r;

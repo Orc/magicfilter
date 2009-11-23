@@ -55,7 +55,7 @@ struct rule {
     struct rule *next;		/* next rule in the chain */
 } ;
 
-extern struct rule *getline(FILE *);
+extern struct rule *getrule(FILE *);
 extern struct rule *rules;
 char * action_p(enum rule_action);
 
