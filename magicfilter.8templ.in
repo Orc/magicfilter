@@ -201,7 +201,7 @@ LPNGmysteriously refuses to work, set
 LPNG.BR \-\-filterdir and \-\-execdir
 LPNGto the filters directory or a subdirectory of it.)
 MAN .SH AUTHOR
-MAN H. Peter Anvin <hpa@zytor.com>, David Parsons <orc@pell.chi.il.us>
+MAN H. Peter Anvin <hpa@zytor.com>, David Parsons <orc@pell.portland.or.us>
 MAN .SH SEE ALSO
 MAN .BR printcap (5),
 TRAD.BR &PROGRAM& (5)

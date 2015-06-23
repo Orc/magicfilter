@@ -201,7 +201,7 @@ or
 .B fpipe
 facilities going into an infinite loop.
 .SH AUTHOR
-H. Peter Anvin <hpa@zytor.com>, David Parsons <orc@pell.chi.il.us>
+H. Peter Anvin <hpa@zytor.com>, David Parsons <orc@pell.portland.or.us>
 .SH SEE ALSO
 .BR printcap (5),
 .BR magicfilter (5),
