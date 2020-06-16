@@ -71,7 +71,6 @@ struct magic {
 };
 
 #include <stdio.h>	/* Include that here, to make sure __P gets defined */
-#include <stdlib.h>
 
 #ifndef __P
 # if __STDC__ || __cplusplus
