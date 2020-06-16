@@ -359,7 +359,7 @@ The documentation for the
 action lies when it says that it attempts to send mail to the person
 who sent the rejected job.
 .SH AUTHOR
-H. Peter Anvin <hpa@zytor.com>, David Parsons <orc@pell.chi.il.us>
+H. Peter Anvin <hpa@zytor.com>, David Parsons <orc@pell.portland.or.us>
 .SH SEE ALSO
 .BR printcap (5),
 .BR lpr (8),

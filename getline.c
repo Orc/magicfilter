@@ -27,19 +27,14 @@
  *  THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * getrule() picks up a magicfilter rule line and passes it back to magicfilter
+ * getline() picks up a magicfilter rule line and passes it back to magicfilter
  *
  * rules are:
  *
  *	/pattern/	action[/hint/]	[arg {arg ...}]
  */
 
-#include <stdlib.h>
-#ifdef HAVE_MALLOC_H
 #include <malloc.h>
-#elif HAVE_SYS_MALLOC_H
-#include <sys/malloc.h>
-#endif
 #include <string.h>
 #include <ctype.h>
 #include "rule.h"
@@ -177,10 +172,10 @@ vis(FILE *output, unsigned char *s)
 
 
 /*
- * getrule() gets a rule off the input stream
+ * getline() gets a rule off the input stream
  */
 struct rule *
-getrule(FILE *input)
+getline(FILE *input)
 {
     static char *bfr = 0;	/* a buffer for reading lines into */
     static int buflen = 0;	/* size of that buffer */
@@ -194,13 +189,13 @@ getrule(FILE *input)
 	/* initialize the line buffer the first time in
 	 */
 	if ( (bfr = malloc(buflen=80)) == 0) {
-	    perror("getrule::malloc");
+	    perror("getline::malloc");
 	    exit(1);
 	}
     }
 
     if ( (r = calloc(1, sizeof *r)) == 0) {
-	perror("getrule::calloc");
+	perror("getline::calloc");
 	exit(1);
     }
 
@@ -245,7 +240,7 @@ again:
     }
 
     if ( (r->pattern = strdup(q)) == 0) {
-	perror("getrule::strdup");
+	perror("getline::strdup");
 	exit(1);
     }
 
@@ -294,7 +289,7 @@ again:
 
     if (hint)
 	if ( (r->hint = strdup(hint)) == 0) {
-	    perror("getrule::strdup");
+	    perror("getline::strdup");
 	    exit(1);
 	}
 
@@ -307,11 +302,11 @@ again:
     while ( (q = getarg(&p)) != 0) {
 	r->argv = realloc(r->argv, (3 + r->argc) * sizeof r->argv[0]);
 	if (r->argv == 0) {
-	    perror("getrule::realloc");
+	    perror("getline::realloc");
 	    exit(1);
 	}
 	if ( (r->argv[r->argc++] = strdup(q)) == 0) {
-	    perror("getrule::strdup");
+	    perror("getline::strdup");
 	    exit(1);
 	}
     }
@@ -329,10 +324,10 @@ again:
 
 	for (x = 0; x < r->argc; x++) {
 	    fprintf(stderr, "        arg %d is `", x);
-	    vis(stderr, (unsigned char*)(r->argv[x]));
+	    vis(stderr, r->argv[x]);
 	    fprintf(stderr, "'\n");
 	}
     }
     ++ruleno;
     return r;
-} /* getrule */
+} /* getline */
